@@ -15,15 +15,15 @@ import (
 // TODO: Add example
 type jsonWrap map[string]any
 
-// readJSON reads JSON from a request, and places the result in a dst of type
-// any. This MUST be a reference and not a pass by value. Furthermore, this
-// type will be of map[string]any. The error handling logic here is a more
-// effective way to "triage" errors ( view documentation for a link to the
-// definition of triage) and issues/that/arise/from decoding JSON data.
-// This is a variation of the readJSON function in the book
-// "Let's Go Further" by Alex Edwards,
-// page 90. What's key is that the method call must use a reference for
-// dst, since that is typically what is consumed in a JSON decode.
+// readJSON reads JSON from a request, and places the result in a destination,
+// or "dst" of type any. This MUST be a reference and not a pass by value.
+// Furthermore, this type will be of map[string]any. The error handling logic
+// here is a more effective way to "triage" errors ( view documentation for a
+// link to the definition of triage) and issues/that/arise/from decoding JSON
+// data. This is a variation of the readJSON function in the book "Let's Go
+// Further" by Alex Edwards, on page 90. What's key is that the method call
+// must use a reference for dst, since that is typically what is consumed in a
+// JSON decode.
 func (app *app) readJSON(
 	w http.ResponseWriter,
 	r *http.Request,
@@ -43,14 +43,14 @@ func (app *app) readJSON(
 
 	err := decoder.Decode(dst)
 
-	// Here, errors are sorted out, in other words triaged. This makes the
-	// error returns more readable for the API consumer, which is important
-	// when we want to debug.
 	if err != nil {
 		var syntaxError *json.SyntaxError
 		var unmarshalTypeError *json.UnmarshalTypeError
 		var invalidUnmarshalError *json.InvalidUnmarshalError
 		var maxBytesError *http.MaxBytesError
+
+		// Triage the errors. This makes the error returns more readable for
+		// the API consumer, which is important when we want to debug.
 
 		switch {
 		case errors.As(err, &syntaxError):
@@ -78,8 +78,9 @@ func (app *app) readJSON(
 		case errors.Is(err, io.EOF):
 			return errors.New("body must not be empty")
 
-		// In the event a field cannot be mapped to a destination key,
-		// an error occurs in the form of "json: unknown field".
+		// In the event a field cannot be mapped to a destination key, an error
+		// occurs in the form of "json: unknown field".
+
 		case strings.HasPrefix(err.Error(), "json: unknown field"):
 			fieldName := strings.TrimPrefix(err.Error(), "json: unknown field")
 			return fmt.Errorf("body contains unknown key %s", fieldName)
@@ -107,8 +108,8 @@ func (app *app) readJSON(
 }
 
 // writeJSON ingests a data, map of map[string]any, and writes it to a
-// http.ResponseWriter stream. It returns an error in case
-// there was one writing to the stream.
+// http.ResponseWriter stream. It returns an error in case there was one
+// writing to the stream.
 func (app *app) writeJSON(
 	w http.ResponseWriter,
 	status int,
@@ -122,11 +123,13 @@ func (app *app) writeJSON(
 	}
 
 	// Add any headers
+
 	for k, v := range headers {
 		w.Header()[k] = v
 	}
 
 	// Add headers, then write to the output stream.
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	_, err = w.Write(js)
@@ -138,9 +141,9 @@ func (app *app) writeJSON(
 	return nil
 }
 
-// jsonBuilder builds a JSON that can then be written to
-// a http.ResponseWriter stream. The parameter "data", is a
-// map[string]any
+// jsonBuilder builds a JSON string that can then be written to a
+// http.ResponseWriter stream. The parameter "data", is of the type
+// map[string]any.
 func jsonBuilder(data any) ([]byte, error) {
 	js, err := json.Marshal(data)
 	if err != nil {

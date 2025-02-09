@@ -4,13 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"runtime/debug"
 )
 
-// Methods in this file define error handling functions.
-// logError wraps the app.logger.Print() method in order to
-// add more sophistication later on to the error logging
-// capabilities. Many of these functions contain
-// side effects.
+// Methods in this file define error handling functions. logError wraps the app.
+// logger.Print() method in order to add more sophistication later on to the
+// error logging capabilities. Many of these functions contain side effects.
 
 type ServerError error
 
@@ -20,7 +19,10 @@ var (
 
 // logError logs an error using the app's logger.
 func (app *app) logError(r *http.Request, err error) {
-	app.logger.Print(err)
+	if r != nil {
+		app.logger.Error("%s: %v\n", r.Method, err)
+	}
+	app.logger.Error(err.Error())
 }
 
 func (app *app) errorResponse(
@@ -42,8 +44,17 @@ func (app *app) serverError(
 	r *http.Request,
 	err error,
 ) {
-	app.logError(r, err)
-	http.Error(w, err.Error(), http.StatusBadRequest)
+	var (
+		method = r.Method
+		uri    = r.URL.RequestURI()
+
+		// trace is the stack trace, returned as a byte slice.
+		trace = string(debug.Stack())
+	)
+
+	app.logger.Error(err.Error(), method, "uri", uri, trace)
+
+	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
 // rateLimitExceededResponse returns a 429 Too Many Requests response.

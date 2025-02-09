@@ -6,20 +6,20 @@ import "net/http"
 // to write system health data to the http.ResponseWriter stream.
 func (app *app) healthcheckHandler(w http.ResponseWriter, r *http.Request) {
 
-	app.logger.Printf("received %s from %s", r.Method, r.RemoteAddr)
+	app.logger.Info("received %s from %s", r.Method, r.RemoteAddr)
 
 	res := jsonWrap{
 		"status": "available",
 		"system_info": map[string]any{
 			"status":      "available",
 			"environment": app.config.env,
-			"version":     "1",
+			"version":     app.config.version,
 		},
 	}
 
 	err := app.writeJSON(w, http.StatusOK, res, nil)
 
 	if err != nil {
-		app.serverError(w, r, err)
+		app.logger.Error(err.Error())
 	}
 }

@@ -1,39 +1,24 @@
 package main
 
-import (
-	"log"
-	"os"
-)
+import "log/slog"
 
-const LOGGER_PREFIX = ""
-
-func main() {
-	var err error
-
-	logger := log.New(os.Stdout, LOGGER_PREFIX, log.Ldate|log.Ltime)
-
-	config := config{
-		port: 3453,
-	}
-
-	app := &app{
-		config: config,
-		logger: logger,
-	}
-
-	err = app.server()
-
-	logger.Fatal(err)
+type app struct {
+	config *config
+	logger *slog.Logger
+	// services  *domain.Service
 }
 
-// config is application configuration.
+// config defines application configuration.
 type config struct {
 
 	// port access for host.
 	port int
 
 	// Runtime environment, either "development", "staging", or "production".
-	env string
+	env Environment
+
+	// version number, based on environment variable.
+	version string
 
 	// db is the database configuration config.
 	db dbConfig
@@ -73,3 +58,11 @@ type dbConfig struct {
 	MaxIdleConns int
 	MaxIdleTime  string
 }
+
+type Environment uint8
+
+const (
+	ENV_DEVELOPMENT Environment = 0
+	ENV_STAGING     Environment = 1
+	ENV_PRODUCTION  Environment = 2
+)

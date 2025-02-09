@@ -10,7 +10,7 @@ import (
 	"golang.org/x/time/rate"
 )
 
-func (app *app) recoverPanic(next http.Handler) http.Handler {
+func (app *app) recoverPanic(_ http.Handler) http.Handler {
 	return http.HandlerFunc(
 		func(w http.ResponseWriter, r *http.Request) {
 			defer func() {

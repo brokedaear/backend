@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -23,7 +23,6 @@ func (app *app) server() error {
 		app.routes(),
 	)
 
-	//handler = app.routes()
 	// handler = app.enableCORS(app.rateLimit(app.routes()))
 	handler = app.enableCORS(app.routes())
 
@@ -35,10 +34,7 @@ func (app *app) server() error {
 		WriteTimeout: 30 * time.Second,
 	}
 
-	app.logger.Printf(
-		"starting server on %s:%s", app.config.db.Host,
-		strconv.Itoa(app.config.port),
-	)
+	app.logger.Info("starting server", slog.Int("port", app.config.port))
 
 	return srv.ListenAndServe()
 }
