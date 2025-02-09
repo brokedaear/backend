@@ -8,6 +8,12 @@ Website backend API and application that interfaces with frontend and database. 
 - Nixpacks
 - golang-lint
 
+## Methods
+
+### Authentication and Authorization
+
+Authentication is done using Auth0 or an external auth provider like Google or GitHub. A persistent user database stores minimal user data, and should only include username and products purchased. Another database is kept during runtime for user session tokens. These tokens define active sessions. Both databases should be GDPR compliant.
+
 ## Style Guide
 
 Below is the style guide and choices for writing code. The focal point of these choices are readability.
