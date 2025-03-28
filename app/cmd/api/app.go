@@ -2,8 +2,6 @@ package main
 
 import (
 	"log/slog"
-
-	"backend.brokedaear.com/service"
 )
 
 type app struct {

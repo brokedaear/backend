@@ -1,6 +1,6 @@
 module backend.brokedaear.com
 
-go 1.23.5
+go 1.24.1
 
 require (
 	github.com/tomasen/realip v0.0.0-20180522021738-f0c99a92ddce
