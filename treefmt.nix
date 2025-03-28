@@ -13,6 +13,10 @@
     "*.sql"
   ];
 
+  settings.global.excludes = [
+    "*"
+  ];
+
   programs.gofumpt.enable = true;
   programs.protolint.enable = true;
   programs.sqlfluff = {
