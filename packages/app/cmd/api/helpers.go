@@ -42,7 +42,6 @@ func (app *app) readJSON(
 	decoder.DisallowUnknownFields()
 
 	err := decoder.Decode(dst)
-
 	if err != nil {
 		var syntaxError *json.SyntaxError
 		var unmarshalTypeError *json.UnmarshalTypeError
@@ -116,7 +115,6 @@ func (app *app) writeJSON(
 	data any,
 	headers http.Header,
 ) error {
-
 	js, err := jsonBuilder(data)
 	if err != nil {
 		return err
@@ -133,7 +131,6 @@ func (app *app) writeJSON(
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	_, err = w.Write(js)
-
 	if err != nil {
 		return err
 	}

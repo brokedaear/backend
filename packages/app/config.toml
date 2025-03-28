@@ -1,0 +1,7 @@
+# Main application backend service configuration for the BdE website.
+
+[directories]
+log_output_dir = ""
+
+[addresses]
+database_addr = ""

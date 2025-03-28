@@ -1,16 +1,19 @@
 package main
 
-import "log/slog"
+import (
+	"log/slog"
+
+	"backend.brokedaear.com/service"
+)
 
 type app struct {
-	config *config
-	logger *slog.Logger
-	// services  *domain.Service
+	config   *config
+	logger   *slog.Logger
+	services *service.Service
 }
 
 // config defines application configuration.
 type config struct {
-
 	// port access for host.
 	port int
 
@@ -33,6 +36,13 @@ type config struct {
 
 		// enabled either disables or enables rate limited altogether.
 		enabled bool
+	}
+
+	// Store secrets as bytes for easy overwrite capability.
+	secrets struct {
+		stripePrivateKey    []byte
+		stripePublicKey     []byte
+		stripeWebhookSecret []byte
 	}
 }
 

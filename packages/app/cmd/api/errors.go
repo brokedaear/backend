@@ -13,9 +13,7 @@ import (
 
 type ServerError error
 
-var (
-	MALFORMED_JSON_SYNTAX ServerError = ServerError(errors.New("malformed json syntax"))
-)
+var MALFORMED_JSON_SYNTAX ServerError = ServerError(errors.New("malformed json syntax"))
 
 // logError logs an error using the app's logger.
 func (app *app) logError(r *http.Request, err error) {

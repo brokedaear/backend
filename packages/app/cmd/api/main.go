@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 
+	"backend.brokedaear.com/service"
 	"backend.brokedaear.com/utils/prettylog"
 )
 
@@ -23,6 +24,11 @@ func main() {
 		port:    7402,
 		env:     Environment(*envFlag),
 		version: "0.1",
+		secrets: struct {
+			stripePrivateKey    []byte
+			stripePublicKey     []byte
+			stripeWebhookSecret []byte
+		}{},
 	}
 
 	slogHandlerOptions := &slog.HandlerOptions{
@@ -38,9 +44,12 @@ func main() {
 
 	logger.Info(fmt.Sprintf("application environment set to %d", config.env))
 
+	services := service.NewServices()
+
 	app := &app{
-		config: config,
-		logger: logger,
+		config:   config,
+		logger:   logger,
+		services: services,
 	}
 
 	err = app.server()
