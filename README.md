@@ -1,18 +1,28 @@
-# backend
+# Backend Monorepo
 
-Website backend API and application that interfaces with frontend and database. This code is based on guides by Alex Edwards in _Let's Go_ and _Let's Go Further_, as well as `n30w/Darkspace`, with several modifications to fit business requirements and specifications.
+The backend at BdE is designed as a microservice architecture.
+
+## `app`
+
+App contains the main application code that interfaces with databases and the frontend.
+
+## `logger`
+
+Logger is a service that stores logs for system administration and data persistence.
+
+## `monitor`
+
+Monitor is a service that monitors environment and system health, along with the health of other microservices.
+
+## `telemetry`
+
+Telemetry is a service that communicates with plugin clients.
 
 ## Dependencies
 
-- Go
-- Nixpacks
-- golang-lint
+- Nix package manager
 
-## Methods
-
-### Authentication and Authorization
-
-Authentication is done using Auth0 or an external auth provider like Google or GitHub. A persistent user database stores minimal user data, and should only include username and products purchased. Another database is kept during runtime for user session tokens. These tokens define active sessions. Both databases should be GDPR compliant.
+Nix is used to setup the development environment and build packages.
 
 ## Style Guide
 
