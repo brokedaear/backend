@@ -35,8 +35,11 @@
 
         # System tools
         lazygit
-        htop
         mprocs
+        neovim
+        helix
+        go-task
+        vegeta # HTTP Load Testing Tool
       ];
 
       eachSystem =
