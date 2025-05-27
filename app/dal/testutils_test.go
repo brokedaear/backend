@@ -17,12 +17,14 @@ func newTestDB(t *testing.T) *sql.DB {
 		t.Fatal(err)
 	}
 
+	// TODO ALSO ADD LOCATION OF SQL SETUP THAT ADDS TEST DATA
+
 	// Execute the script query
 
 	t.Cleanup(func() {
 		// defer db.close
 
-		script, err := os.ReadFile("localtion/of/teardown.sql")
+		script, err := os.ReadFile("location/of/teardown.sql")
 		if err != nil {
 			t.Fatal(err)
 		}
