@@ -26,19 +26,32 @@
       };
 
       commonPackages = with pkgs; [
-        # Development related
-        go
-        gofumpt
+        # Go related
+        go # Need that obviously
+        gofumpt # Go formatter
+        golangci-lint # Local/CI linter
         gopls
-        stripe-cli
-        upx
+        gotestsum # Pretty tester
+        gotools
+
+        # Library related
+        stripe-cli # Stripe integration
+        upx # Binary shrinker
+
+        # Dev tools
+        openapi-generator-cli
+        jq # JSON manipulation
+        yq # YAML manipulation
+
+        # Formatting
+        nixfmt-rfc-style
 
         # System tools
-        lazygit
-        mprocs
-        neovim
-        helix
-        go-task
+        lazygit # TUI Git interface
+        mprocs # Process runner
+        neovim # Better vim
+        helix # Quick text editor
+        go-task # Makefile alternative
         vegeta # HTTP Load Testing Tool
       ];
 

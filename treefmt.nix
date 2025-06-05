@@ -17,7 +17,10 @@
     "*"
   ];
 
+  settings.global.fail-on-change = false;
+
   programs.gofumpt.enable = true;
+  programs.goimports.enable = true;
   programs.protolint.enable = true;
   programs.sqlfluff = {
     enable = true;
