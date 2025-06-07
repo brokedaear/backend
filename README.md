@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2025 BROKE DA EAR LLC <https://brokedaear.com>
+
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # Backend Monorepo
 
 The backend at BdE is designed as a microservice architecture.
@@ -8,11 +14,11 @@ App contains the main application code that interfaces with databases and the fr
 
 ## `logger`
 
-Logger is a service that stores logs for system administration and data persistence.
+Logger is a service that stores logs for system administration and data persistence. It saves logs to remote services.
 
 ## `monitor`
 
-Monitor is a service that monitors environment and system health, along with the health of other microservices.
+Monitor is a service that monitors environment and system health, along with the health of other microservices. It exposes metrics to a Grafana dashboard.
 
 ## `telemetry`
 

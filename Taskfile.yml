@@ -1,0 +1,34 @@
+# SPDX-FileCopyrightText: 2025 BROKE DA EAR LLC <https://brokedaear.com>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+version: "3"
+
+silent: true
+
+tasks:
+  license: # annotate passed files with reuse license
+    cmds: # usage: task license -- <files/dirs/globs>
+      - reuse annotate --copyright="{{.REUSE_COPYRIGHT}}" --license="{{.REUSE_LICENSE}}" {{.CLI_ARGS}}
+  fmt: # Formats all files
+    cmds:
+      - nix fmt .
+  lint: # Lints all files
+    cmds:
+      - golangci-lint run
+  test-all:
+    cmds:
+      - gotestsum
+    silent: true
+  test-core:
+    cmds:
+      - gotestsum --format testdox ./internal/core/...
+  test-core-server:
+    cmds:
+      - gotestsum --format testdox ./internal/core/server/...
+  test-common:
+    cmds:
+      - gotestsum --format testdox ./internal/common/...
+  test-internal:
+    cmds:
+      - gotestsum --format testdox ./internal/...

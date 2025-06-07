@@ -1,4 +1,7 @@
-# modified from https://github.com/akirak/flake-templates/blob/master/node-typescript/flake.nix
+# SPDX-FileCopyrightText: 2025 BROKE DA EAR LLC <https://brokedaear.com>
+#
+# SPDX-License-Identifier: Apache-2.0
+
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
@@ -42,6 +45,8 @@
         openapi-generator-cli
         jq # JSON manipulation
         yq # YAML manipulation
+        tokei # CLOC
+        reuse # LICENSE compliance
 
         # Formatting
         nixfmt-rfc-style
@@ -70,6 +75,10 @@
           shellHook = ''
             # eval "$(starship init bash)"
             export PS1='$(printf "\033[01;34m(nix) \033[00m\033[01;32m[%s] \033[01;33m\033[00m$\033[00m " "\W")'
+
+            # reuse specification variables
+            export REUSE_COPYRIGHT="BROKE DA EAR LLC <https://brokedaear.com>"
+            export REUSE_LICENSE="Apache-2.0"
           '';
         };
       });
