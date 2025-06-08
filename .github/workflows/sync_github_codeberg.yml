@@ -1,3 +1,7 @@
+# SPDX-FileCopyrightText: 2025 BROKE DA EAR LLC <https://brokedaear.com>
+#
+# SPDX-License-Identifier: Unlicense
+
 name: Sync backend repo (GitHub -> Codeberg)
 on:
   push:

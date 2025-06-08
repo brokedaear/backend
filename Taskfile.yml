@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2025 BROKE DA EAR LLC <https://brokedaear.com>
 #
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: Unlicense
 
 version: "3"
 
@@ -13,9 +13,12 @@ tasks:
   fmt: # Formats all files
     cmds:
       - nix fmt .
-  lint: # Lints all files
+  lint-go: # lints all Go files
     cmds:
       - golangci-lint run
+  lint-reuse: # lints LICENSE inclusions
+    cmds:
+      - reuse lint
   test-all:
     cmds:
       - gotestsum

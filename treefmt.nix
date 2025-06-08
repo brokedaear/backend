@@ -1,6 +1,6 @@
 # SPDX-FileCopyrightText: 2025 BROKE DA EAR LLC <https://brokedaear.com>
 #
-# SPDX-License-Identifier: Apache-2.0
+# SPDX-License-Identifier: Unlicense
 
 {
   # See https://github.com/numtide/treefmt-nix#supported-programs
