@@ -9,7 +9,7 @@ on:
 jobs:
   format-and-lint:
     name: Formatting and Linting
-    runs-on: ubuntu-{{ vars.RUNNER_VERSION }}
+    runs-on: ubuntu-${{ vars.RUNNER_VERSION }}
     steps:
       - name: Git checkout
         uses: actions/checkout@v4
@@ -37,7 +37,7 @@ jobs:
   test:
     name: Unit Testing
     needs: format-and-lint
-    runs-on: ubuntu-{{ vars.RUNNER_VERSION }}
+    runs-on: ubuntu-${{ vars.RUNNER_VERSION }}
     steps:
       - name: git checkout
         uses: actions/checkout@v4
