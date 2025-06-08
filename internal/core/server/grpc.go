@@ -10,4 +10,4 @@ type GRPCServer interface {
 	io.Closer
 }
 
-type grpcServer struct{}
+// type grpcServer struct{}

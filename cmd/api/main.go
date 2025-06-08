@@ -11,7 +11,6 @@ import (
 	"os"
 
 	"backend.brokedaear.com/internal/common/utils/loggers"
-	"backend.brokedaear.com/internal/core/service"
 )
 
 const version = "1.0.0"
@@ -49,12 +48,12 @@ func main() {
 
 	logger.Info(fmt.Sprintf("application environment set to %d", config.env))
 
-	services := service.NewServices()
+	// services := service.NewServices()
 
 	app := &app{
-		config:   config,
-		logger:   logger,
-		services: services,
+		config: config,
+		logger: logger,
+		// services: services,
 	}
 
 	err := app.server()

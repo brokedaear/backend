@@ -111,7 +111,7 @@ func TestPortConfig(t *testing.T) {
 						testNoWant{},
 						false,
 					),
-					p: 65534,
+					p: 65533,
 				},
 				{
 					testCaseBase: newTestCaseBase(

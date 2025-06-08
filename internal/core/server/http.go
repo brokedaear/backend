@@ -26,7 +26,6 @@ type HttpServer interface {
 
 type httpServer struct {
 	*Base
-	server *http.Server
 }
 
 // NewHttpServer creates a new HTTP server using a logger and a config.

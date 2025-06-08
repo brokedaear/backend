@@ -8,7 +8,7 @@ import (
 	"backend.brokedaear.com/internal/common/tests/test"
 )
 
-type jsonWrap map[string]any
+// type jsonWrap map[string]any
 
 type testNoWant = test.NoWant
 

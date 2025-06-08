@@ -5,7 +5,7 @@
 {
   # See https://github.com/numtide/treefmt-nix#supported-programs
 
-  projectRootFile = "flake.nix";
+  projectRootFile = "./flake.nix";
 
   settings.global.includes = [
     "*.go"

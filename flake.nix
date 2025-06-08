@@ -5,6 +5,7 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    systems.url = "systems";
 
     # Code QL
     treefmt-nix = {
@@ -19,6 +20,7 @@
       self,
       nixpkgs,
       treefmt-nix,
+      systems,
       ...
     }@inputs:
     let
@@ -58,6 +60,7 @@
         helix # Quick text editor
         go-task # Makefile alternative
         vegeta # HTTP Load Testing Tool
+        figlet # Terminal text ASCII
       ];
 
       eachSystem =
@@ -69,16 +72,16 @@
       formatter = eachSystem (pkgs: treefmtEval.${pkgs.system}.config.build.wrapper);
 
       devShells = eachSystem (pkgs: {
-        default = pkgs.mkShell {
-          packages = commonPackages;
+        default = pkgs.mkShellNoCC {
+          # packages = commonPackages;
+          buildInputs = [ ] ++ commonPackages;
+
+          REUSE_COPYRIGHT = "BROKE DA EAR LLC <https://brokedaear.com>";
+          REUSE_LICENSE = "Apache-2.0";
 
           shellHook = ''
             # eval "$(starship init bash)"
             export PS1='$(printf "\033[01;34m(nix) \033[00m\033[01;32m[%s] \033[01;33m\033[00m$\033[00m " "\W")'
-
-            # reuse specification variables
-            export REUSE_COPYRIGHT="BROKE DA EAR LLC <https://brokedaear.com>"
-            export REUSE_LICENSE="Apache-2.0"
           '';
         };
       });

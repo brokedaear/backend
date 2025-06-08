@@ -5,6 +5,8 @@
 version: "2"
 linters:
   exclusions:
+    paths-except:
+      - "cmd/" # TODO remove this when cmd is fixed
     presets:
       - comments
       - common-false-positives

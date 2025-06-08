@@ -9,9 +9,9 @@ import (
 )
 
 type app struct {
-	config   *config
-	logger   *slog.Logger
-	services *service.Service
+	config *config
+	logger *slog.Logger
+	// services *service.Service
 }
 
 // config defines application configuration.

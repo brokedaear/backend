@@ -35,7 +35,7 @@ type user struct {
 // and password must be valid.
 type possibleCustomer struct {
 	user
-	verified bool
+	// verified bool
 }
 
 func NewPossibleCustomer(email, password Credential, sessionToken ...Credential) (*possibleCustomer, error) {

@@ -13,25 +13,47 @@ tasks:
   fmt: # Formats all files
     cmds:
       - nix fmt .
+  lint:
+    cmds:
+      - echo "Linting Go files"
+      - task lint-go
+      - echo "Linting LICENSE"
+      - task lint-license
+  test:
+    cmds:
+      - echo "Testing go files..."
+      - task test-internal
   lint-go: # lints all Go files
     cmds:
       - golangci-lint run
-  lint-reuse: # lints LICENSE inclusions
+  lint-license: # lints LICENSE inclusions
     cmds:
       - reuse lint
   test-all:
     cmds:
       - gotestsum
-    silent: true
   test-core:
     cmds:
+      - echo "internal/core unit tests"
       - gotestsum --format testdox ./internal/core/...
+    silent: false
   test-core-server:
     cmds:
       - gotestsum --format testdox ./internal/core/server/...
+    silent: false
   test-common:
     cmds:
+      - echo "internal/common unit tests"
       - gotestsum --format testdox ./internal/common/...
+    silent: false
   test-internal:
     cmds:
+      - echo "internal unit tests"
       - gotestsum --format testdox ./internal/...
+    silent: false
+  ci-intro-text:
+    cmds:
+      - ./scripts/ci.sh
+  ci-outro-text:
+    cmds:
+      - ./scripts/ci-shoots.sh
