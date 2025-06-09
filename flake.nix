@@ -5,8 +5,7 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    systems.url = "systems";
-
+    flake-utils.url = "github:numtide/flake-utils";
     # Code QL
     # treefmt-nix = {
     #   url = "github:numtide/treefmt-nix";
@@ -17,7 +16,6 @@
       url = "github:cachix/git-hooks.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
   };
 
   outputs =
@@ -25,30 +23,27 @@
       self,
       nixpkgs,
       # treefmt-nix,
-      systems,
-      ...
-    }@inputs:
+      flake-utils,
+      pre-commit-hooks,
+    }:
+    flake-utils.lib.eachDefaultSystem
+      (system:
     let
       pkgs = import nixpkgs {
-        config = {
-          allowUnfree = true;
-        };
+        inherit system;
+        config.allowUnfree = true;
       };
 
-      eachSystem = nixpkgs.lib.genAttrs (import systems);
-      nixpkgsFor = eachSystem (system: import nixpkgs { inherit system; });
+      # eachSystem = nixpkgs.lib.genAttrs (import systems);
+      # nixpkgsFor = eachSystem (system: import nixpkgs { inherit system; });
       # treefmtEval = eachSystem (system: treefmt-nix.lib.evalModule system ./treefmt.nix);
       ci-script-name = "run-ci";
       ci-script = (pkgs.writeScriptBin ci-script-name (builtins.readFile ./scripts/ci.sh)).overrideAttrs(old: {
           buildCommand = "${old.buildCommand}\n patchShebangs $out";
-        });
+      });
     in
-    {
-      # formatter = eachSystem (system: treefmtEval.${pkgs.system}.config.build.wrapper);
-
-      devShells = eachSystem (system:
         let
-          pkgs = nixpkgsFor.${system};
+          # pkgs = import nixpkgs { inherit system; };
           commonPackages = with pkgs; [
             # Go related
             go # Need that obviously
@@ -83,25 +78,26 @@
           ];
         in
         {
-          default = pkgs.mkShell {
-            # packages = commonPackages;
-            buildInputs = [ ci-script ] ++ commonPackages;
-            
-            # Environment variables
-            REUSE_COPYRIGHT = "BROKE DA EAR LLC <https://brokedaear.com>";
-            REUSE_LICENSE = "Apache-2.0";
+          devShells = {
+            default = pkgs.mkShell {
+              # packages = commonPackages;
+              buildInputs = [ ci-script ] ++ commonPackages;
+              
+              # Environment variables
+              REUSE_COPYRIGHT = "BROKE DA EAR LLC <https://brokedaear.com>";
+              REUSE_LICENSE = "Apache-2.0";
 
-            shellHook = ''
-              # eval "$(starship init bash)"
-              export PS1='$(printf "\033[01;34m(nix) \033[00m\033[01;32m[%s] \033[01;33m\033[00m$\033[00m " "\W")'
-            '';
+              shellHook = ''
+                # eval "$(starship init bash)"
+                export PS1='$(printf "\033[01;34m(nix) \033[00m\033[01;32m[%s] \033[01;33m\033[00m$\033[00m " "\W")'
+              '';
+            };
           };
-      });
 
-      checks = eachSystem (pkgs: {
-        # Throws an error if any of the source files are not correctly formatted
-        # when you run `nix flake check --print-build-logs`. Useful for CI
-        # treefmt = treefmtEval.${pkgs.system}.config.build.check self;
-      });
-    };
+      #     checks = eachSystem (pkgs: {
+      #   # Throws an error if any of the source files are not correctly formatted
+      #   # when you run `nix flake check --print-build-logs`. Useful for CI
+      #   # treefmt = treefmtEval.${pkgs.system}.config.build.check self;
+      # });
+        });
 }
