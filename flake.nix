@@ -7,12 +7,12 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
     # Code QL
-    # treefmt-nix = {
-    #   url = "github:numtide/treefmt-nix";
-    #   inputs.nixpkgs.follows = "nixpkgs";
-    # };
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
-    pre-commit-hooks = { 
+    pre-commit-hooks = {
       url = "github:cachix/git-hooks.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
@@ -22,82 +22,84 @@
     {
       self,
       nixpkgs,
-      # treefmt-nix,
+      treefmt-nix,
       flake-utils,
       pre-commit-hooks,
     }:
-    flake-utils.lib.eachDefaultSystem
-      (system:
-    let
-      pkgs = import nixpkgs {
-        inherit system;
-        config.allowUnfree = true;
-      };
+    flake-utils.lib.eachDefaultSystem (
+      system:
+      let
+        pkgs = import nixpkgs {
+          inherit system;
+          config.allowUnfree = true;
+        };
 
-      # eachSystem = nixpkgs.lib.genAttrs (import systems);
-      # nixpkgsFor = eachSystem (system: import nixpkgs { inherit system; });
-      # treefmtEval = eachSystem (system: treefmt-nix.lib.evalModule system ./treefmt.nix);
-      ci-script-name = "run-ci";
-      ci-script = (pkgs.writeScriptBin ci-script-name (builtins.readFile ./scripts/ci.sh)).overrideAttrs(old: {
-          buildCommand = "${old.buildCommand}\n patchShebangs $out";
-      });
-    in
-        let
-          # pkgs = import nixpkgs { inherit system; };
-          commonPackages = with pkgs; [
-            # Go related
-            go # Need that obviously
-            gofumpt # Go formatter
-            golangci-lint # Local/CI linter
-            gopls
-            gotestsum # Pretty tester
-            gotools
+        # eachSystem = nixpkgs.lib.genAttrs (import systems);
+        # nixpkgsFor = eachSystem (system: import nixpkgs { inherit system; });
+        treefmtEval = treefmt-nix.lib.evalModule pkgs ./treefmt.nix;
+        ci-script-name = "run-ci";
+        ci-script =
+          (pkgs.writeScriptBin ci-script-name (builtins.readFile ./scripts/ci.sh)).overrideAttrs
+            (old: {
+              buildCommand = "${old.buildCommand}\n patchShebangs $out";
+            });
+      in
+      let
+        commonPackages = with pkgs; [
+          # Go related
+          go # Need that obviously
+          gofumpt # Go formatter
+          golangci-lint # Local/CI linter
+          gopls
+          gotestsum # Pretty tester
+          gotools
 
-            # Library related
-            stripe-cli # Stripe integration
-            upx # Binary shrinker
+          # Library related
+          stripe-cli # Stripe integration
+          upx # Binary shrinker
 
-            # Dev tools
-            openapi-generator-cli
-            jq # JSON manipulation
-            yq # YAML manipulation
-            tokei # CLOC
-            reuse # LICENSE compliance
+          # Dev tools
+          openapi-generator-cli
+          jq # JSON manipulation
+          yq # YAML manipulation
+          tokei # CLOC
+          reuse # LICENSE compliance
 
-            # Formatting
-            nixfmt-rfc-style
+          # Formatting
+          nixfmt-rfc-style
 
-            # System tools
-            lazygit # TUI Git interface
-            mprocs # Process runner
-            neovim # Better vim
-            helix # Quick text editor
-            go-task # Makefile alternative
-            vegeta # HTTP Load Testing Tool
-            figlet # Terminal text ASCII
-          ];
-        in
-        {
-          devShells = {
-            default = pkgs.mkShell {
-              # packages = commonPackages;
-              buildInputs = [ ci-script ] ++ commonPackages;
-              
-              # Environment variables
-              REUSE_COPYRIGHT = "BROKE DA EAR LLC <https://brokedaear.com>";
-              REUSE_LICENSE = "Apache-2.0";
+          # System tools
+          lazygit # TUI Git interface
+          mprocs # Process runner
+          neovim # Better vim
+          helix # Quick text editor
+          go-task # Makefile alternative
+          vegeta # HTTP Load Testing Tool
+          figlet # Terminal text ASCII
+        ];
+      in
+      {
+        formatter = treefmtEval.config.build.wrapper;
+        devShells = {
+          default = pkgs.mkShell {
+            buildInputs = [ ci-script ] ++ commonPackages;
 
-              shellHook = ''
-                # eval "$(starship init bash)"
-                export PS1='$(printf "\033[01;34m(nix) \033[00m\033[01;32m[%s] \033[01;33m\033[00m$\033[00m " "\W")'
-              '';
-            };
+            # Environment variables
+            REUSE_COPYRIGHT = "BROKE DA EAR LLC <https://brokedaear.com>";
+            REUSE_LICENSE = "Apache-2.0";
+
+            shellHook = ''
+              # eval "$(starship init bash)"
+              export PS1='$(printf "\033[01;34m(nix) \033[00m\033[01;32m[%s] \033[01;33m\033[00m$\033[00m " "\W")'
+            '';
           };
+        };
 
-      #     checks = eachSystem (pkgs: {
-      #   # Throws an error if any of the source files are not correctly formatted
-      #   # when you run `nix flake check --print-build-logs`. Useful for CI
-      #   # treefmt = treefmtEval.${pkgs.system}.config.build.check self;
-      # });
-        });
+        checks = {
+          # Throws an error if any of the source files are not correctly formatted
+          # when you run `nix flake check --print-build-logs`. Useful for CI
+          treefmt = treefmtEval.config.build.check self;
+        };
+      }
+    );
 }
