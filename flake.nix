@@ -86,9 +86,10 @@
           pre-commit-check = pre-commit-hooks.lib.${system}.run {
             src = ./.;
             hooks = {
-              cspell = {
+              format = {
                 enable = true;
-                name = "Check spelling";
+                name = "Format with treefmt";
+                entry = "${treefmtEval.config.build.wrapper}/bin/treefmt";
                 stages = [ "pre-commit" ];
               };
             };
@@ -105,6 +106,7 @@
             REUSE_LICENSE = "Apache-2.0";
 
             shellHook = ''
+              ${self.checks.${system}.pre-commit-check.shellHook}
               # eval "$(starship init bash)"
               export PS1='$(printf "\033[01;34m(nix) \033[00m\033[01;32m[%s] \033[01;33m\033[00m$\033[00m " "\W")'
             '';
