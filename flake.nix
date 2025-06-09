@@ -128,7 +128,7 @@
             CI = true;
             shellHook = ''
               echo "Entering CI shell. Only essential CI tools available."
-              run-ci
+              #run-ci
             '';
           };
         };
