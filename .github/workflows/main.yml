@@ -22,7 +22,7 @@ jobs:
           fail-mode: true
 
       - name: Check flake
-        run: nix flake check
+        run: nix flake check --print-build-logs
 
   format-and-lint:
     name: Formatting and Linting
@@ -40,4 +40,4 @@ jobs:
           fail-mode: true
 
       - name: Run CI script
-        run: nix develop --command run-ci
+        run: nix develop .#ci --command run-ci

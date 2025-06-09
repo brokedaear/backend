@@ -41,39 +41,33 @@
             (old: {
               buildCommand = "${old.buildCommand}\n patchShebangs $out";
             });
-      in
-      let
-        commonPackages = with pkgs; [
+
+        ciPackages = with pkgs; [
           # Go related
           go # Need that obviously
           gofumpt # Go formatter
           golangci-lint # Local/CI linter
-          gopls
           gotestsum # Pretty tester
-          gotools
-
-          # Library related
-          stripe-cli # Stripe integration
           upx # Binary shrinker
-
-          # Dev tools
-          openapi-generator-cli
-          jq # JSON manipulation
-          yq # YAML manipulation
-          tokei # CLOC
           reuse # LICENSE compliance
-
-          # Formatting
           nixfmt-rfc-style
+          figlet # Terminal text ASCII
+          tokei # CLOC
+        ];
 
-          # System tools
+        devPackages = with pkgs; [
+          gopls
+          gotools
+          stripe-cli # Stripe integration
           lazygit # TUI Git interface
           mprocs # Process runner
           neovim # Better vim
           helix # Quick text editor
           go-task # Makefile alternative
           vegeta # HTTP Load Testing Tool
-          figlet # Terminal text ASCII
+          openapi-generator-cli
+          jq # JSON manipulation
+          yq # YAML manipulation
         ];
       in
       {
@@ -94,12 +88,29 @@
               };
             };
           };
+
+          # ci =
+          #   pkgs.runCommand "ci-runner"
+          #     {
+          #       nativeBuildInputs = [ ci-script ] ++ ciPackages; # Include ci-script and ciPackages
+          #       inherit (self.checks.${system}.pre-commit-check) shellHook; # Reuse pre-commit shellHook if needed
+          #     }
+          #     ''
+          #       echo "Running CI script with essential packages..."
+          #       # Ensure the ci-script is executable and in PATH for this check
+          #       export PATH=$out/bin:$PATH
+          #       run-ci
+          #       touch $out # Ensure the output path is created
+          #     '';
         };
 
         devShells = {
-          default = pkgs.mkShell {
+          default = pkgs.mkShellNoCC {
             buildInputs =
-              [ ci-script ] ++ commonPackages ++ self.checks.${system}.pre-commit-check.enabledPackages;
+              [ ci-script ]
+              ++ ciPackages
+              ++ devPackages
+              ++ self.checks.${system}.pre-commit-check.enabledPackages;
 
             # Environment variables
             REUSE_COPYRIGHT = "BROKE DA EAR LLC <https://brokedaear.com>";
@@ -111,8 +122,16 @@
               export PS1='$(printf "\033[01;34m(nix) \033[00m\033[01;32m[%s] \033[01;33m\033[00m$\033[00m " "\W")'
             '';
           };
-        };
 
+          ci = pkgs.mkShellNoCC {
+            buildInputs = [ ci-script ] ++ ciPackages;
+            CI = true;
+            shellHook = ''
+              echo "Entering CI shell. Only essential CI tools available."
+              run-ci
+            '';
+          };
+        };
       }
     );
 }

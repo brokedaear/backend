@@ -15,4 +15,4 @@ reuse lint
 echo "Running Go tests..."
 gotestsum --format testdox ./internal/...
 
-figlet -f crawford Cherreh
+figlet -f cricket Cherreh
