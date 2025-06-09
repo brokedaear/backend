@@ -21,13 +21,15 @@ jobs:
         with:
           fail-mode: true
 
+      - run: nix flake check --print-build-logs
+
       - run: nix develop --command \
           task ci-intro-text
 
-      - name: Format all files
-        run: |
-          nix develop --command \
-            task fmt
+      # - name: Format all files
+      #   run: |
+      #     nix develop --command \
+      #       task fmt
 
       - name: Lint all files
         run: |
