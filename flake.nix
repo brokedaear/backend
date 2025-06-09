@@ -79,7 +79,7 @@
           ];
         in
         {
-          default = pkgs.mkShellNoCC {
+          default = pkgs.mkShell {
             # packages = commonPackages;
             buildInputs = [ ] ++ commonPackages;
             
