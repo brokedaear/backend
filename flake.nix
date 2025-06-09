@@ -38,6 +38,10 @@
       eachSystem = nixpkgs.lib.genAttrs (import systems);
       nixpkgsFor = eachSystem (system: import nixpkgs { inherit system; });
       # treefmtEval = eachSystem (system: treefmt-nix.lib.evalModule system ./treefmt.nix);
+      ci-script-name = "run-ci";
+      ci-script = (pkgs.writeScriptBin ci-script-name (builtins.readFile ./scripts/ci.sh)).overrideAttrs(old: {
+          buildCommand = "${old.buildCommand}\n patchShebangs $out";
+        });
     in
     {
       # formatter = eachSystem (system: treefmtEval.${pkgs.system}.config.build.wrapper);
@@ -81,7 +85,7 @@
         {
           default = pkgs.mkShell {
             # packages = commonPackages;
-            buildInputs = [ ] ++ commonPackages;
+            buildInputs = [ ci-script ] ++ commonPackages;
             
             # Environment variables
             REUSE_COPYRIGHT = "BROKE DA EAR LLC <https://brokedaear.com>";

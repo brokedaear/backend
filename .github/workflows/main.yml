@@ -40,6 +40,4 @@ jobs:
           fail-mode: true
 
       - name: Run CI script
-        run: nix develop --command \
-          ./scripts/ci.sh
-
+        run: nix develop --command run-ci
