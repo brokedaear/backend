@@ -42,4 +42,7 @@
 
   # Nix
   programs.nixfmt.enable = true;
+
+  # Shell
+  programs.shfmt.enable = true;
 }
