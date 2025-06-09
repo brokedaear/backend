@@ -7,8 +7,8 @@ on:
   push:
     branches: ["*"] # TODO change to dev later.
 jobs:
-  format-and-lint:
-    name: Formatting and Linting
+  check-flake:
+    name: Check Nix flake
     runs-on: ubuntu-${{ vars.RUNNER_VERSION }}
     steps:
       - name: Git checkout
@@ -21,37 +21,25 @@ jobs:
         with:
           fail-mode: true
 
-      - run: nix flake check --print-build-logs
+      - name: Check flake
+        run: nix flake check
 
-      - run: nix develop --command \
-          task ci-intro-text
-
-      # - name: Format all files
-      #   run: |
-      #     nix develop --command \
-      #       task fmt
-
-      - name: Lint all files
-        run: |
-          nix develop --command \
-            task lint
-
-  test:
-    name: Unit Testing
-    needs: format-and-lint
+  format-and-lint:
+    name: Formatting and Linting
     runs-on: ubuntu-${{ vars.RUNNER_VERSION }}
+    needs: check-flake
     steps:
-      - name: git checkout
+      - name: Git checkout
         uses: actions/checkout@v4
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@main
       - uses: DeterminateSystems/flakehub-cache-action@main
+      - name: Check Nixpkgs inputs
+        uses: DeterminateSystems/flake-checker-action@main
+        with:
+          fail-mode: true
 
-      - name: Unit tests
-        run: |
-          nix develop --command \
-            task test
+      - name: Run CI script
+      - run: nix develop --command \
+          ./scripts/ci.sh
 
-      - run: |
-          nix develop --command \
-            task ci-outro-text

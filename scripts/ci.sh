@@ -5,3 +5,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 figlet -f small BrokeDaCI
+
+echo "Linting Go Files..."
+golangci-lint run
+
+echo "Linting Licenses..."
+reuse lint
+
+echo "Running Go tests..."
+gotestsum --format testdox ./internal/...
+
+figlet -f crawford Cherreh
