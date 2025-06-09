@@ -34,8 +34,6 @@
           config.allowUnfree = true;
         };
 
-        # eachSystem = nixpkgs.lib.genAttrs (import systems);
-        # nixpkgsFor = eachSystem (system: import nixpkgs { inherit system; });
         treefmtEval = treefmt-nix.lib.evalModule pkgs ./treefmt.nix;
         ci-script-name = "run-ci";
         ci-script =
@@ -80,9 +78,27 @@
       in
       {
         formatter = treefmtEval.config.build.wrapper;
+
+        checks = {
+          # Throws an error if any of the source files are not correctly formatted
+          # when you run `nix flake check --print-build-logs`. Useful for CI
+          treefmt = treefmtEval.config.build.check self;
+          pre-commit-check = pre-commit-hooks.lib.${system}.run {
+            src = ./.;
+            hooks = {
+              cspell = {
+                enable = true;
+                name = "Check spelling";
+                stages = [ "pre-commit" ];
+              };
+            };
+          };
+        };
+
         devShells = {
           default = pkgs.mkShell {
-            buildInputs = [ ci-script ] ++ commonPackages;
+            buildInputs =
+              [ ci-script ] ++ commonPackages ++ self.checks.${system}.pre-commit-check.enabledPackages;
 
             # Environment variables
             REUSE_COPYRIGHT = "BROKE DA EAR LLC <https://brokedaear.com>";
@@ -95,11 +111,6 @@
           };
         };
 
-        checks = {
-          # Throws an error if any of the source files are not correctly formatted
-          # when you run `nix flake check --print-build-logs`. Useful for CI
-          treefmt = treefmtEval.config.build.check self;
-        };
       }
     );
 }
