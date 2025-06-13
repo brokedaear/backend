@@ -5,7 +5,9 @@
 name: Main
 on:
   push:
-    branches: ["*"] # TODO change to dev later.
+    branches: ["dev"]
+  pull_request:
+    branches: ["dev"]
 jobs:
   check-flake:
     name: Check Nix flake
