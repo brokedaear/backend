@@ -6,6 +6,12 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+
+    da-flake = {
+      url = "github:brokedaear/da-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     # Code QL
     treefmt-nix = {
       url = "github:numtide/treefmt-nix";
@@ -25,6 +31,7 @@
       treefmt-nix,
       flake-utils,
       pre-commit-hooks,
+      da-flake,
     }:
     flake-utils.lib.eachDefaultSystem (
       system:
@@ -36,39 +43,29 @@
 
         treefmtEval = treefmt-nix.lib.evalModule pkgs ./treefmt.nix;
         ci-script-name = "run-ci";
-        ci-script =
-          (pkgs.writeScriptBin ci-script-name (builtins.readFile ./scripts/ci.sh)).overrideAttrs
-            (old: {
-              buildCommand = "${old.buildCommand}\n patchShebangs $out";
-            });
+        ci-script = da-flake.lib.${system}.mkScript {
+          name = ci-script-name;
+          scriptPath = ./scripts/ci.sh;
+        };
 
-        ciPackages = with pkgs; [
-          # Go related
-          go # Need that obviously
-          gofumpt # Go formatter
-          golangci-lint # Local/CI linter
-          gotestsum # Pretty tester
-          upx # Binary shrinker
-          reuse # LICENSE compliance
-          nixfmt-rfc-style
-          figlet # Terminal text ASCII
-          tokei # CLOC
-        ];
+        ciPackages =
+          with pkgs;
+          [
+            go # Need that obviously
+            gofumpt # Go formatter
+            golangci-lint # Local/CI linter
+            gotestsum # Pretty tester
+          ]
+          ++ da-flake.lib.${system}.ciPackages;
 
-        devPackages = with pkgs; [
-          gopls
-          gotools
-          stripe-cli # Stripe integration
-          lazygit # TUI Git interface
-          mprocs # Process runner
-          neovim # Better vim
-          helix # Quick text editor
-          go-task # Makefile alternative
-          vegeta # HTTP Load Testing Tool
-          openapi-generator-cli
-          jq # JSON manipulation
-          yq # YAML manipulation
-        ];
+        devPackages =
+          with pkgs;
+          [
+            gopls
+            gotools
+            stripe-cli # Stripe integration
+          ]
+          ++ da-flake.lib.${system}.devPackages;
       in
       {
         formatter = treefmtEval.config.build.wrapper;
@@ -112,9 +109,7 @@
               ++ devPackages
               ++ self.checks.${system}.pre-commit-check.enabledPackages;
 
-            # Environment variables
-            REUSE_COPYRIGHT = "BROKE DA EAR LLC <https://brokedaear.com>";
-            REUSE_LICENSE = "Apache-2.0";
+            inherit (da-flake.lib.${system}.envVars) REUSE_COPYRIGHT REUSE_LICENSE;
 
             shellHook = ''
               ${self.checks.${system}.pre-commit-check.shellHook}
@@ -128,7 +123,6 @@
             CI = true;
             shellHook = ''
               echo "Entering CI shell. Only essential CI tools available."
-              #run-ci
             '';
           };
         };
