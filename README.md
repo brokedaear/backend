@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
 
 # Backend Monorepo
 
-The backend at BdE is designed as a microservice architecture.
+The backend at BdE is currently monolithic with considerations for a microservice architecture in mind.
 
 ## `app`
 

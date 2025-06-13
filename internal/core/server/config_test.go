@@ -8,17 +8,18 @@ import (
 	"testing"
 
 	"backend.brokedaear.com/internal/common/tests/assert"
+	"backend.brokedaear.com/internal/common/tests/test"
 )
 
 func TestEnvironmentConfig(t *testing.T) {
 	t.Run(
 		"string", func(t *testing.T) {
 			tests := []struct {
-				testCaseBase[string]
+				test.CaseBase
 				e Environment
 			}{
 				{
-					testCaseBase: newTestCaseBase(
+					CaseBase: newTestCaseBase(
 						"is development",
 						"DEVELOPMENT",
 						false,
@@ -26,11 +27,11 @@ func TestEnvironmentConfig(t *testing.T) {
 					e: EnvDevelopment,
 				},
 				{
-					testCaseBase: newTestCaseBase("is staging", "STAGING", false),
-					e:            EnvStaging,
+					CaseBase: newTestCaseBase("is staging", "STAGING", false),
+					e:        EnvStaging,
 				},
 				{
-					testCaseBase: newTestCaseBase(
+					CaseBase: newTestCaseBase(
 						"is production",
 						"PRODUCTION",
 						false,
@@ -38,18 +39,18 @@ func TestEnvironmentConfig(t *testing.T) {
 					e: EnvProduction,
 				},
 				{
-					testCaseBase: newTestCaseBase("is ci", "CI", false),
-					e:            EnvCI,
+					CaseBase: newTestCaseBase("is ci", "CI", false),
+					e:        EnvCI,
 				},
 				{
-					testCaseBase: newTestCaseBase("is invalid", "INVALID", false),
-					e:            4,
+					CaseBase: newTestCaseBase("is invalid", "INVALID", false),
+					e:        4,
 				},
 			}
 			for _, tt := range tests {
 				t.Run(
 					tt.Name, func(t *testing.T) {
-						assert.Equal(t, tt.e.String(), tt.Want)
+						assert.Equal(t, tt.e.String(), tt.Want.(string))
 					},
 				)
 			}
@@ -58,21 +59,21 @@ func TestEnvironmentConfig(t *testing.T) {
 	t.Run(
 		"validation", func(t *testing.T) {
 			tests := []struct {
-				testCaseBase[testNoWant]
+				test.CaseBase
 				e Environment
 			}{
 				{
-					testCaseBase: newTestCaseBase(
+					CaseBase: newTestCaseBase(
 						"valid Environment",
-						testNoWant{},
+						nil,
 						false,
 					),
 					e: EnvDevelopment,
 				},
 				{
-					testCaseBase: newTestCaseBase(
+					CaseBase: newTestCaseBase(
 						"invalid Environment",
-						testNoWant{},
+						nil,
 						true,
 					),
 					e: 100,
@@ -94,37 +95,37 @@ func TestPortConfig(t *testing.T) {
 	t.Run(
 		"validation", func(t *testing.T) {
 			tests := []struct {
-				testCaseBase[testNoWant]
+				test.CaseBase
 				p Port
 			}{
 				{
-					testCaseBase: newTestCaseBase(
+					CaseBase: newTestCaseBase(
 						"valid Port lower bound",
-						testNoWant{},
+						nil,
 						false,
 					),
 					p: 1024,
 				},
 				{
-					testCaseBase: newTestCaseBase(
+					CaseBase: newTestCaseBase(
 						"valid Port upper bound",
-						testNoWant{},
+						nil,
 						false,
 					),
 					p: 65533,
 				},
 				{
-					testCaseBase: newTestCaseBase(
+					CaseBase: newTestCaseBase(
 						"invalid Port below range",
-						testNoWant{},
+						nil,
 						true,
 					),
 					p: 0,
 				},
 				{
-					testCaseBase: newTestCaseBase(
+					CaseBase: newTestCaseBase(
 						"invalid Port upper bound",
-						testNoWant{},
+						nil,
 						true,
 					),
 					p: 65535,
@@ -149,11 +150,11 @@ func TestAddressConfig(t *testing.T) {
 			t.Run(
 				"should error", func(t *testing.T) {
 					tests := []struct {
-						testCaseBase[ConfigError]
+						test.CaseBase
 						a Address
 					}{
 						{
-							testCaseBase: newTestCaseBase(
+							CaseBase: newTestCaseBase(
 								"empty Address",
 								ErrInvalidAddressLength,
 								true,
@@ -161,7 +162,7 @@ func TestAddressConfig(t *testing.T) {
 							a: "",
 						},
 						{
-							testCaseBase: newTestCaseBase(
+							CaseBase: newTestCaseBase(
 								"Address with colon",
 								ErrInvalidAddressColon,
 								true,
@@ -169,7 +170,7 @@ func TestAddressConfig(t *testing.T) {
 							a: "127.0.0.1:8080",
 						},
 						{
-							testCaseBase: newTestCaseBase(
+							CaseBase: newTestCaseBase(
 								"Address with path",
 								ErrInvalidAddressWithPath,
 								true,
@@ -190,21 +191,21 @@ func TestAddressConfig(t *testing.T) {
 			t.Run(
 				"should pass", func(t *testing.T) {
 					tests := []struct {
-						testCaseBase[testNoWant]
+						test.CaseBase
 						a Address
 					}{
 						{
-							testCaseBase: newTestCaseBase(
+							CaseBase: newTestCaseBase(
 								"just hostname",
-								testNoWant{},
+								nil,
 								false,
 							),
 							a: "localhost",
 						},
 						{
-							testCaseBase: newTestCaseBase(
+							CaseBase: newTestCaseBase(
 								"hostname with TLD",
-								testNoWant{},
+								nil,
 								false,
 							),
 							a: "shaboingboing.com",
@@ -228,11 +229,11 @@ func TestVersionConfig(t *testing.T) {
 	t.Run(
 		"validation", func(t *testing.T) {
 			tests := []struct {
-				testCaseBase[ConfigError]
+				test.CaseBase
 				v Version
 			}{
 				{
-					testCaseBase: newTestCaseBase[ConfigError](
+					CaseBase: newTestCaseBase(
 						"valid version",
 						"",
 						false,
@@ -240,7 +241,7 @@ func TestVersionConfig(t *testing.T) {
 					v: "1.2.3",
 				},
 				{
-					testCaseBase: newTestCaseBase(
+					CaseBase: newTestCaseBase(
 						"too few elements",
 						ErrInvalidVersionFormat,
 						true,
@@ -248,7 +249,7 @@ func TestVersionConfig(t *testing.T) {
 					v: "1.2",
 				},
 				{
-					testCaseBase: newTestCaseBase(
+					CaseBase: newTestCaseBase(
 						"too many elements",
 						ErrInvalidVersionFormat,
 						true,
@@ -256,7 +257,7 @@ func TestVersionConfig(t *testing.T) {
 					v: "1.2.3.4",
 				},
 				{
-					testCaseBase: newTestCaseBase(
+					CaseBase: newTestCaseBase(
 						"non-numeric element",
 						ErrInvalidVersionChars,
 						true,
@@ -264,7 +265,7 @@ func TestVersionConfig(t *testing.T) {
 					v: "1.2.alpha",
 				},
 				{
-					testCaseBase: newTestCaseBase(
+					CaseBase: newTestCaseBase(
 						"non-numeric element with numeric",
 						ErrInvalidVersionChars,
 						true,
@@ -272,7 +273,7 @@ func TestVersionConfig(t *testing.T) {
 					v: "1.2.7ae",
 				},
 				{
-					testCaseBase: newTestCaseBase(
+					CaseBase: newTestCaseBase(
 						"negative number",
 						ErrInvalidVersionSign,
 						true,

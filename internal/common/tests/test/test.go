@@ -5,27 +5,22 @@
 package test
 
 // CaseBase is the base for table driven test cases.
-type CaseBase[T any] struct {
+type CaseBase struct {
 	// Name is the name of the test.
 	Name string
 
 	// Want is what is wanted from the output.
-	Want T
+	Want any
 
 	// WantErr is whether an error should be expected.
 	WantErr bool
 }
 
 // NewCaseBase creates a new TestCaseBase.
-func NewCaseBase[T any](name string, want T, wantErr bool) CaseBase[T] {
-	return CaseBase[T]{
+func NewCaseBase(name string, want any, wantErr bool) CaseBase {
+	return CaseBase{
 		Name:    name,
 		Want:    want,
 		WantErr: wantErr,
 	}
 }
-
-// NoWant is a no-op type for table-test cases that implement
-// the TestCaseBase. Use it for generic type instantiation to specify that
-// a test case will not use the `Want` property.
-type NoWant struct{}

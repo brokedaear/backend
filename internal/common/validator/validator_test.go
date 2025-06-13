@@ -13,18 +13,18 @@ import (
 
 func TestCheck(t *testing.T) {
 	tests := []struct {
-		test.CaseBase[any]
+		test.CaseBase
 		args []Verifiable
 	}{
 		{
-			CaseBase: test.CaseBase[any]{
+			CaseBase: test.CaseBase{
 				Name:    "no types",
 				WantErr: true,
 			},
 			args: []Verifiable{},
 		},
 		{
-			CaseBase: test.CaseBase[any]{
+			CaseBase: test.CaseBase{
 				Name: "valid types",
 			},
 			args: []Verifiable{
@@ -34,7 +34,7 @@ func TestCheck(t *testing.T) {
 			},
 		},
 		{
-			CaseBase: test.CaseBase[any]{
+			CaseBase: test.CaseBase{
 				Name:    `invalid type"`,
 				WantErr: true,
 			},

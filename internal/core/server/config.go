@@ -24,6 +24,17 @@ type Config struct {
 
 	// Version is the Version of the software.
 	Version Version
+
+	// Telemetry determines if telemetry tracking for internals are enabled.
+	Telemetry bool
+}
+
+func (c Config) Validate() error {
+	return validator.Check(c.Addr, c.Port, c.Env, c.Version)
+}
+
+func (c Config) Value() any {
+	return c
 }
 
 func NewConfig(addr string, port uint16, env uint8, version string) (*Config, error) {

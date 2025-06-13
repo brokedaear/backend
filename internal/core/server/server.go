@@ -6,13 +6,16 @@ package server
 
 import (
 	"net"
+
+	"backend.brokedaear.com/internal/common/telemetry"
 )
 
 // Base is the base setup for any kind of server.
 type Base struct {
-	logger   Logger
-	config   *Config
-	listener net.Listener
+	logger    Logger
+	Telemetry telemetry.Telemetry
+	config    *Config
+	listener  net.Listener
 }
 
 func NewBase(logger Logger, config *Config) (*Base, error) {

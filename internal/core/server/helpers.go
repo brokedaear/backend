@@ -8,12 +8,6 @@ import (
 	"backend.brokedaear.com/internal/common/tests/test"
 )
 
-// type jsonWrap map[string]any
-
-type testNoWant = test.NoWant
-
-type testCaseBase[T any] = test.CaseBase[T]
-
-func newTestCaseBase[T any](name string, want T, wantErr bool) testCaseBase[T] {
-	return testCaseBase[T](test.NewCaseBase(name, want, wantErr))
+func newTestCaseBase(name string, want any, wantErr bool) test.CaseBase {
+	return test.NewCaseBase(name, want, wantErr)
 }

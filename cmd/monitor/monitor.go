@@ -26,5 +26,5 @@ func newMonitorServer(logger server.Logger, config *server.Config) (*monitorServ
 }
 
 func (s *monitorServer) Start(ctx context.Context) error {
-	return s.ListenAndServe(ctx, routePrometheusMetrics)
+	return s.ListenAndServe(ctx)
 }
