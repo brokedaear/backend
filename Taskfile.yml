@@ -1,0 +1,59 @@
+# SPDX-FileCopyrightText: 2025 BROKE DA EAR LLC <https://brokedaear.com>
+#
+# SPDX-License-Identifier: Unlicense
+
+version: "3"
+
+silent: true
+
+tasks:
+  license: # annotate passed files with reuse license
+    cmds: # usage: task license -- <files/dirs/globs>
+      - reuse annotate --copyright="{{.REUSE_COPYRIGHT}}" --license="{{.REUSE_LICENSE}}" {{.CLI_ARGS}}
+  fmt: # Formats all files
+    cmds:
+      - nix fmt .
+  lint:
+    cmds:
+      - echo "Linting Go files"
+      - task lint-go
+      - echo "Linting LICENSE"
+      - task lint-license
+  test:
+    cmds:
+      - echo "Testing go files..."
+      - task test-internal
+  lint-go: # lints all Go files
+    cmds:
+      - golangci-lint run
+  lint-license: # lints LICENSE inclusions
+    cmds:
+      - reuse lint
+  test-all:
+    cmds:
+      - gotestsum
+  test-core:
+    cmds:
+      - echo "internal/core unit tests"
+      - gotestsum --format testdox ./internal/core/...
+    silent: false
+  test-core-server:
+    cmds:
+      - gotestsum --format testdox ./internal/core/server/...
+    silent: false
+  test-common:
+    cmds:
+      - echo "internal/common unit tests"
+      - gotestsum --format testdox ./internal/common/...
+    silent: false
+  test-internal:
+    cmds:
+      - echo "internal unit tests"
+      - gotestsum --format testdox ./internal/...
+    silent: false
+  ci-intro-text:
+    cmds:
+      - ./scripts/ci.sh
+  ci-outro-text:
+    cmds:
+      - ./scripts/ci-shoots.sh

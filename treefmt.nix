@@ -1,7 +1,11 @@
+# SPDX-FileCopyrightText: 2025 BROKE DA EAR LLC <https://brokedaear.com>
+#
+# SPDX-License-Identifier: Unlicense
+
 {
   # See https://github.com/numtide/treefmt-nix#supported-programs
 
-  projectRootFile = "flake.nix";
+  projectRootFile = "./flake.nix";
 
   settings.global.includes = [
     "*.go"
@@ -17,7 +21,10 @@
     "*"
   ];
 
+  settings.global.fail-on-change = false;
+
   programs.gofumpt.enable = true;
+  programs.goimports.enable = true;
   programs.protolint.enable = true;
   programs.sqlfluff = {
     enable = true;
@@ -35,4 +42,7 @@
 
   # Nix
   programs.nixfmt.enable = true;
+
+  # Shell
+  programs.shfmt.enable = true;
 }

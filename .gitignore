@@ -1,4 +1,10 @@
+# SPDX-FileCopyrightText: 2025 BROKE DA EAR LLC <https://brokedaear.com>
+#
+# SPDX-License-Identifier: Apache-2.0
+
 .direnv
+.idea
 mprocs.log
+.pre-commit-config.yaml
 
 vendor
