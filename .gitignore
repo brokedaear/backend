@@ -8,3 +8,6 @@ mprocs.log
 .pre-commit-config.yaml
 
 vendor
+
+.claude/settings.local.json
+CLAUDE.md

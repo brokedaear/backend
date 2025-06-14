@@ -15,6 +15,7 @@
     "*.nix"
     "*.proto"
     "*.sql"
+    "*.sh"
   ];
 
   settings.global.excludes = [

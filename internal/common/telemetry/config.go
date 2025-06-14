@@ -17,7 +17,7 @@ import (
 type Config struct {
 	ServiceName    string
 	ServiceVersion string
-	ServiceId      string
+	ServiceID      string
 	ExporterConfig ExporterConfig
 }
 
@@ -30,8 +30,8 @@ func (c Config) Validate() error {
 		return ErrNoServiceVersion
 	}
 
-	if strings.TrimSpace(c.ServiceId) == "" {
-		return ErrNoServiceId
+	if strings.TrimSpace(c.ServiceID) == "" {
+		return ErrNoServiceID
 	}
 
 	err := validateServiceName(c.ServiceName)
@@ -64,6 +64,20 @@ type ExporterConfig struct {
 	Headers  map[string]string
 }
 
+func NewExporterConfig(
+	typ ExporterType,
+	endpoint string,
+	insecure bool,
+	headers map[string]string,
+) ExporterConfig {
+	return ExporterConfig{
+		Type:     typ,
+		Endpoint: endpoint,
+		Insecure: insecure,
+		Headers:  headers,
+	}
+}
+
 func (e ExporterConfig) Validate() error {
 	err := e.Type.Validate()
 	if err != nil {
@@ -73,12 +87,12 @@ func (e ExporterConfig) Validate() error {
 	// Validate endpoint based on exporter type
 	switch e.Type {
 	case ExporterTypeGRPC, ExporterTypeHTTP:
-		err := e.validateNetworkEndpoint()
+		err = e.validateNetworkEndpoint()
 		if err != nil {
 			return err
 		}
 	case ExporterTypeStdout:
-		err := e.validateStdoutEndpoint()
+		err = e.validateStdoutEndpoint()
 		if err != nil {
 			return err
 		}
@@ -168,7 +182,7 @@ func (e ExporterConfig) Value() any {
 type ExporterType uint8
 
 func (e ExporterType) Validate() error {
-	if e > 2 {
+	if e > ExporterTypeStdout {
 		return ErrInvalidExporterType
 	}
 
@@ -279,7 +293,7 @@ func (e ConfigError) Error() string {
 
 var (
 	ErrNoServiceName              ConfigError = "no service name provided"
-	ErrNoServiceId                ConfigError = "no service id provided"
+	ErrNoServiceID                ConfigError = "no service id provided"
 	ErrNoServiceVersion           ConfigError = "no service version provided"
 	ErrInvalidServiceName         ConfigError = "invalid service name"
 	ErrInvalidServiceVersion      ConfigError = "invalid service version"

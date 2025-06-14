@@ -78,7 +78,7 @@ func newStdoutExporter(_ context.Context, config ExporterConfig) (log.Exporter, 
 
 	// Optional: write to a file instead of stdout
 	if config.Endpoint != "" {
-		file, err := os.OpenFile(config.Endpoint, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+		file, err := os.OpenFile(config.Endpoint, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 		if err != nil {
 			return nil, fmt.Errorf("failed to open file %s: %w", config.Endpoint, err)
 		}
@@ -146,7 +146,7 @@ func newStdoutMetricExporter(_ context.Context, config ExporterConfig) (metric.E
 
 	// Optional: write to a file instead of stdout
 	if config.Endpoint != "" {
-		file, err := os.OpenFile(config.Endpoint, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+		file, err := os.OpenFile(config.Endpoint, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 		if err != nil {
 			return nil, fmt.Errorf("failed to open file %s: %w", config.Endpoint, err)
 		}
@@ -217,7 +217,7 @@ func newStdoutTraceExporter(_ context.Context, config ExporterConfig) (
 
 	// Optional: write to a file instead of stdout
 	if config.Endpoint != "" {
-		file, err := os.OpenFile(config.Endpoint, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+		file, err := os.OpenFile(config.Endpoint, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 		if err != nil {
 			return nil, fmt.Errorf("failed to open file %s: %w", config.Endpoint, err)
 		}

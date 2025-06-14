@@ -39,25 +39,19 @@ type otelTelemetry struct {
 
 // New creates a new otelTelemetry instance.
 func New(ctx context.Context, config *Config) (Telemetry, error) {
-	rp := newResource(config.ServiceName, config.ServiceVersion, config.ServiceId)
-
-	exportConfig := ExporterConfig{
-		Type:     ExporterTypeGRPC,
-		Endpoint: "",
-		Insecure: true,
-		Headers:  nil,
+	err := config.Validate()
+	if err != nil {
+		return nil, errors.Wrap(err, "invalid telemetry config")
 	}
 
-	le, err := newLoggerExporter(ctx, exportConfig)
+	rp := newResource(config.ServiceName, config.ServiceVersion, config.ServiceID)
+
+	le, err := newLoggerExporter(ctx, config.ExporterConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	lp, err := newLoggerProvider(rp, le)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create logger")
-	}
-
+	lp := newLoggerProvider(rp, le)
 	// logger := zap.New(
 	// 	zapcore.NewTee(
 	// 		zapcore.NewCore(
@@ -69,27 +63,21 @@ func New(ctx context.Context, config *Config) (Telemetry, error) {
 	// 	),
 	// )
 
-	me, err := newMetricExporter(ctx, exportConfig)
+	me, err := newMetricExporter(ctx, config.ExporterConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	mp, err := newMeterProvider(rp, me)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create meter")
-	}
+	mp := newMeterProvider(rp, me)
 
 	meter := mp.Meter(config.ServiceName)
 
-	te, err := newTraceExporter(ctx, exportConfig)
+	te, err := newTraceExporter(ctx, config.ExporterConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	tp, err := newTracerProvider(rp, te)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to create tracer")
-	}
+	tp := newTracerProvider(rp, te)
 
 	tracer := tp.Tracer(config.ServiceName)
 
@@ -107,7 +95,7 @@ func New(ctx context.Context, config *Config) (Telemetry, error) {
 func (t *otelTelemetry) Histogram(metric Metric) (
 	otelmetric.Int64Histogram,
 	error,
-) { //nolint:ireturn
+) { //nolint:ireturn // interface requires returning concrete type
 	histogram, err := t.meter.Int64Histogram(
 		metric.Name,
 		otelmetric.WithDescription(metric.Description),
@@ -124,7 +112,7 @@ func (t *otelTelemetry) Histogram(metric Metric) (
 func (t *otelTelemetry) UpDownCounter(metric Metric) (
 	otelmetric.Int64UpDownCounter,
 	error,
-) { //nolint:ireturn
+) { //nolint:ireturn // interface requires returning concrete type
 	counter, err := t.meter.Int64UpDownCounter(
 		metric.Name,
 		otelmetric.WithDescription(metric.Description),
@@ -157,8 +145,8 @@ func (t *otelTelemetry) Gauge(metric Metric) (otelmetric.Int64Gauge, error) {
 func (t *otelTelemetry) TraceStart(ctx context.Context, name string) (
 	context.Context,
 	oteltrace.Span,
-) { //nolint:ireturn
-	// nolint: spancheck
+) { //nolint:ireturn // interface requires returning concrete type
+	//nolint:spancheck // span is intentionally returned for caller to manage
 	return t.tracer.Start(ctx, name)
 }
 

@@ -11,20 +11,31 @@ import (
 )
 
 type monitorServer struct {
-	server.HttpServer
+	server.HTTPServer
+	logger server.Logger
 }
 
-func newMonitorServer(logger server.Logger, config *server.Config) (*monitorServer, error) {
-	s, err := server.NewHttpServer(logger, config)
+func newMonitorServer(
+	ctx context.Context,
+	logger server.Logger,
+	config *server.Config,
+) (*monitorServer, error) {
+	s, err := server.NewHTTPServer(ctx, logger, config)
 	if err != nil {
 		return nil, err
 	}
 
 	return &monitorServer{
-		HttpServer: s,
+		HTTPServer: s,
+		logger:     logger,
 	}, nil
 }
 
 func (s *monitorServer) Start(ctx context.Context) error {
+	s.logger.Info("hello from start")
 	return s.ListenAndServe(ctx)
+}
+
+func (s *monitorServer) Close() error {
+	return s.HTTPServer.Close()
 }

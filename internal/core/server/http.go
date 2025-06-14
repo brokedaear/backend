@@ -15,15 +15,15 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
-// HttpServer represents an HTTP server that is capable of accepting routes
+// HTTPServer represents an HTTP server that is capable of accepting routes
 // and connections from clients via HTTP. Implementations for this interface
 // include endpoints that serve GraphQL or simple barebones requests.
 //
 // This interface also implements the io.Closer interface, for use in global
 // teardown operations.
-type HttpServer interface {
+type HTTPServer interface {
 	ListenAndServe(context.Context) error
-	RegisterRoutes(...HttpRoute)
+	RegisterRoutes(...HTTPRoute)
 	io.Closer
 }
 
@@ -32,12 +32,15 @@ type httpServer struct {
 	srv *http.Server
 }
 
-// NewHttpServer creates a new HTTP server using a logger and a config.
+// NewHTTPServer creates a new HTTP server using a logger and a config.
 // The server comes with telemetry enabled by default.
-func NewHttpServer(logger Logger, config *Config) (HttpServer, error) {
-	s := &httpServer{}
+func NewHTTPServer(ctx context.Context, logger Logger, config *Config) (HTTPServer, error) {
+	const (
+		readTimeout  = 10 * time.Second
+		writeTimeout = 30 * time.Second
+	)
 
-	b, err := NewBase(logger, config)
+	b, err := NewBase(ctx, logger, config)
 	if err != nil {
 		return nil, err
 	}
@@ -49,15 +52,14 @@ func NewHttpServer(logger Logger, config *Config) (HttpServer, error) {
 		return nil, err
 	}
 
-	s.Base = b
-
-	s.srv = &http.Server{
-		IdleTimeout:  time.Minute,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 30 * time.Second,
-	}
-
-	return s, nil
+	return &httpServer{
+		Base: b,
+		srv: &http.Server{
+			IdleTimeout:  time.Minute,
+			ReadTimeout:  readTimeout,
+			WriteTimeout: writeTimeout,
+		},
+	}, nil
 }
 
 // ListenAndServe listens to specified route endpoints given by route functions
@@ -87,7 +89,11 @@ func (s httpServer) ListenAndServe(ctx context.Context) error {
 }
 
 func (s httpServer) Close() error {
-	shutdownCtx, shutdownCancel := context.WithDeadline(context.Background(), time.Now().Add(20*time.Second))
+	const shutdownTimeout = 20 * time.Second
+	shutdownCtx, shutdownCancel := context.WithDeadline(
+		context.Background(),
+		time.Now().Add(shutdownTimeout),
+	)
 
 	defer shutdownCancel()
 
@@ -110,17 +116,17 @@ func (s httpServer) Close() error {
 	return nil
 }
 
-type HttpRoute interface {
+type HTTPRoute interface {
 	String() string
 	Route() http.HandlerFunc
 }
 
-func (s httpServer) RegisterRoutes(routes ...HttpRoute) {
+func (s httpServer) RegisterRoutes(routes ...HTTPRoute) {
 	s.srv.Handler = s.registerRoutes(routes...)
 }
 
 // registerRoutes needs to be REFACTORED. TODO.
-func (s httpServer) registerRoutes(routes ...HttpRoute) http.Handler {
+func (s httpServer) registerRoutes(routes ...HTTPRoute) http.Handler {
 	mux := http.NewServeMux()
 
 	handleFunc := func(pattern string, handlerFunc http.HandlerFunc) {
@@ -129,7 +135,7 @@ func (s httpServer) registerRoutes(routes ...HttpRoute) http.Handler {
 
 	if s.config.Telemetry {
 		handleFunc = func(pattern string, handlerFunc http.HandlerFunc) {
-			h := otelhttp.WithRouteTag(pattern, http.HandlerFunc(handlerFunc))
+			h := otelhttp.WithRouteTag(pattern, handlerFunc)
 			mux.Handle(pattern, h)
 		}
 	}

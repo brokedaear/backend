@@ -10,6 +10,9 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
+
+	"golang.org/x/sync/errgroup"
 
 	"backend.brokedaear.com/internal/common/infra"
 	"backend.brokedaear.com/internal/common/utils/loggers"
@@ -18,26 +21,31 @@ import (
 
 const (
 	version     = "0.1.0"
-	environment = 0
+	environment = "development"
 	port        = 1025
 	address     = "localhost"
 )
 
 func main() {
-	logger, err := loggers.NewZap()
-	if err != nil {
-		fmt.Printf("failed to initialize logger: %v\n", err)
+	if err := run(); err != nil {
+		fmt.Printf("application error: %v\n", err) //nolint:forbidigo // structured logger not available on init failure
 		os.Exit(1)
 	}
+}
 
-	defer func(logger *loggers.ZapLogger) {
-		err := logger.Sync()
-		if err != nil {
-			fmt.Printf("failed to sync zap logger: %v\n", err)
+func run() error {
+	logger, err := loggers.NewZap()
+	if err != nil {
+		return fmt.Errorf("failed to initialize logger: %w", err)
+	}
+
+	defer func() {
+		if syncErr := logger.Sync(); syncErr != nil {
+			fmt.Printf("failed to sync zap logger: %v\n", syncErr) //nolint:forbidigo // logger sync failure, no alternative
 		}
-	}(logger)
+	}()
 
-	ctx, stop := signal.NotifyContext(
+	ctx, cancel := signal.NotifyContext(
 		context.Background(),
 		os.Interrupt,
 		syscall.SIGHUP,
@@ -46,52 +54,62 @@ func main() {
 		syscall.SIGTERM,
 	)
 
-	defer stop()
+	defer cancel()
 
 	cfg, err := server.NewConfig(address, port, environment, version)
 	if err != nil {
-		logger.Warn("failed to initialize config", "msg", err)
-		return
+		logger.Error("failed to initialize config", "error", err)
+		return fmt.Errorf("failed to initialize config: %w", err)
 	}
 
-	s, err := newMonitorServer(logger, cfg)
+	s, err := newMonitorServer(ctx, logger, cfg)
 	if err != nil {
-		logger.Warn("failed to create monitor server", "msg", err)
-		return
+		logger.Error("failed to create monitor server", "error", err)
+		return fmt.Errorf("failed to create monitor server: %w", err)
 	}
 
-	var (
-		errs = make(chan error)
-		halt = make(chan os.Signal, 1)
+	return runService(ctx, logger, s)
+}
+
+func runService(ctx context.Context, logger server.Logger, s *monitorServer) error {
+	g, gCtx := errgroup.WithContext(ctx)
+
+	g.Go(
+		func() error {
+			logger.Info("starting monitor server", "address", address, "port", port)
+			return s.Start(gCtx)
+		},
 	)
 
-	signal.Notify(
-		halt,
-		os.Interrupt,
-		syscall.SIGHUP,
-		syscall.SIGINT,
-		syscall.SIGQUIT,
-		syscall.SIGTERM,
-	)
+	g.Go(
+		func() error {
+			<-gCtx.Done()
+			logger.Info("shutdown signal received, initiating graceful shutdown")
 
-	go func() {
-		defer stop()
-		for {
+			const shutdownTimeout = 30 * time.Second
+			shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), shutdownTimeout)
+			defer shutdownCancel()
+
 			select {
-			case err := <-errs:
-				logger.Error(err.Error())
-				return
-			case <-halt:
-				logger.Warn("Received halt, shutting down...")
-				return
+			case <-shutdownCtx.Done():
+				logger.Warn("shutdown timeout exceeded, forcing exit")
+			default:
 			}
-		}
-	}()
 
-	<-ctx.Done()
+			if teardownErr := infra.Teardown(s); teardownErr != nil {
+				logger.Error("error during teardown", "error", teardownErr)
+				return teardownErr
+			}
 
-	err = infra.Teardown(s)
-	if err != nil {
-		logger.Error(err.Error())
+			logger.Info("graceful shutdown completed")
+			return nil
+		},
+	)
+
+	if err := g.Wait(); err != nil {
+		logger.Error("monitor service error", "error", err)
+		return fmt.Errorf("monitor service error: %w", err)
 	}
+
+	return nil
 }

@@ -83,6 +83,21 @@
                 entry = "${treefmtEval.config.build.wrapper}/bin/treefmt";
                 stages = [ "pre-commit" ];
               };
+              lint-go = {
+                enable = true;
+                name = "Lint Go files";
+                entry = "golangci-lint run";
+                pass_filenames = false;
+                types = [ "go" ];
+                stages = [ "pre-push" ];
+              };
+              unit-tests = {
+                enable = true;
+                name = "Run unit tests";
+                entry = "gotestsum --format testdox ./...";
+                pass_filenames = false;
+                stages = [ "pre-push" ];
+              };
             };
           };
 
@@ -102,7 +117,7 @@
         };
 
         devShells = {
-          default = pkgs.mkShellNoCC {
+          default = pkgs.mkShell {
             buildInputs =
               [ ci-script ]
               ++ ciPackages
@@ -118,7 +133,7 @@
             '';
           };
 
-          ci = pkgs.mkShellNoCC {
+          ci = pkgs.mkShell {
             buildInputs = [ ci-script ] ++ ciPackages;
             CI = true;
             shellHook = ''

@@ -2,32 +2,36 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package validator
+package validator_test
 
 import (
 	"testing"
 
 	"backend.brokedaear.com/internal/common/tests/assert"
 	"backend.brokedaear.com/internal/common/tests/test"
+	"backend.brokedaear.com/internal/common/validator"
 )
 
 func TestCheck(t *testing.T) {
 	tests := []struct {
 		test.CaseBase
-		args []Verifiable
+		args []validator.Verifiable
 	}{
 		{
 			CaseBase: test.CaseBase{
 				Name:    "no types",
+				Want:    nil,
 				WantErr: true,
 			},
-			args: []Verifiable{},
+			args: []validator.Verifiable{},
 		},
 		{
 			CaseBase: test.CaseBase{
-				Name: "valid types",
+				Name:    "valid types",
+				Want:    nil,
+				WantErr: false,
 			},
-			args: []Verifiable{
+			args: []validator.Verifiable{
 				fakeValidType{"a"},
 				fakeValidType{"b"},
 				fakeValidType{"c"},
@@ -36,9 +40,10 @@ func TestCheck(t *testing.T) {
 		{
 			CaseBase: test.CaseBase{
 				Name:    `invalid type"`,
+				Want:    nil,
 				WantErr: true,
 			},
-			args: []Verifiable{
+			args: []validator.Verifiable{
 				fakeValidType{"a"},
 				fakeInvalidType{"b"},
 				fakeValidType{"c"},
@@ -49,7 +54,7 @@ func TestCheck(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(
 			tt.Name, func(t *testing.T) {
-				err := Check(tt.args...)
+				err := validator.Check(tt.args...)
 				assert.ErrorOrNoError(t, err, tt.WantErr)
 			},
 		)
@@ -58,13 +63,13 @@ func TestCheck(t *testing.T) {
 	t.Run(
 		"error at b not d", func(t *testing.T) {
 			fake := fakeInvalidType{"b"}
-			err := Check(
+			err := validator.Check(
 				fakeValidType{"a"},
 				fake,
 				fakeValidType{"c"},
 				fakeInvalidType{"d"},
 			)
-			assert.Error(t, err, fakeErrInvalidTypeError)
+			assert.Error(t, err, errFakeInvalidTypeError)
 			assert.Equal(t, fake.Value(), "b")
 		},
 	)
@@ -87,7 +92,7 @@ type fakeInvalidType struct {
 }
 
 func (f fakeInvalidType) Validate() error {
-	return fakeErrInvalidTypeError
+	return errFakeInvalidTypeError
 }
 
 func (f fakeInvalidType) Value() any {
@@ -100,4 +105,4 @@ func (f fakeInvalidTypeError) Error() string {
 	return string(f)
 }
 
-const fakeErrInvalidTypeError fakeInvalidTypeError = "invalid type"
+const errFakeInvalidTypeError fakeInvalidTypeError = "invalid type"

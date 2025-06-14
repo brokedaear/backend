@@ -2,104 +2,25 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package server
+package server_test
 
 import (
 	"testing"
 
+	"backend.brokedaear.com/internal/core/server"
 	"backend.brokedaear.com/internal/common/tests/assert"
 	"backend.brokedaear.com/internal/common/tests/test"
 )
-
-func TestEnvironmentConfig(t *testing.T) {
-	t.Run(
-		"string", func(t *testing.T) {
-			tests := []struct {
-				test.CaseBase
-				e Environment
-			}{
-				{
-					CaseBase: newTestCaseBase(
-						"is development",
-						"DEVELOPMENT",
-						false,
-					),
-					e: EnvDevelopment,
-				},
-				{
-					CaseBase: newTestCaseBase("is staging", "STAGING", false),
-					e:        EnvStaging,
-				},
-				{
-					CaseBase: newTestCaseBase(
-						"is production",
-						"PRODUCTION",
-						false,
-					),
-					e: EnvProduction,
-				},
-				{
-					CaseBase: newTestCaseBase("is ci", "CI", false),
-					e:        EnvCI,
-				},
-				{
-					CaseBase: newTestCaseBase("is invalid", "INVALID", false),
-					e:        4,
-				},
-			}
-			for _, tt := range tests {
-				t.Run(
-					tt.Name, func(t *testing.T) {
-						assert.Equal(t, tt.e.String(), tt.Want.(string))
-					},
-				)
-			}
-		},
-	)
-	t.Run(
-		"validation", func(t *testing.T) {
-			tests := []struct {
-				test.CaseBase
-				e Environment
-			}{
-				{
-					CaseBase: newTestCaseBase(
-						"valid Environment",
-						nil,
-						false,
-					),
-					e: EnvDevelopment,
-				},
-				{
-					CaseBase: newTestCaseBase(
-						"invalid Environment",
-						nil,
-						true,
-					),
-					e: 100,
-				},
-			}
-			for _, tt := range tests {
-				t.Run(
-					tt.Name, func(t *testing.T) {
-						err := tt.e.Validate()
-						assert.ErrorOrNoError(t, err, tt.WantErr)
-					},
-				)
-			}
-		},
-	)
-}
 
 func TestPortConfig(t *testing.T) {
 	t.Run(
 		"validation", func(t *testing.T) {
 			tests := []struct {
 				test.CaseBase
-				p Port
+				p server.Port
 			}{
 				{
-					CaseBase: newTestCaseBase(
+					CaseBase: test.NewCaseBase(
 						"valid Port lower bound",
 						nil,
 						false,
@@ -107,7 +28,7 @@ func TestPortConfig(t *testing.T) {
 					p: 1024,
 				},
 				{
-					CaseBase: newTestCaseBase(
+					CaseBase: test.NewCaseBase(
 						"valid Port upper bound",
 						nil,
 						false,
@@ -115,7 +36,7 @@ func TestPortConfig(t *testing.T) {
 					p: 65533,
 				},
 				{
-					CaseBase: newTestCaseBase(
+					CaseBase: test.NewCaseBase(
 						"invalid Port below range",
 						nil,
 						true,
@@ -123,7 +44,7 @@ func TestPortConfig(t *testing.T) {
 					p: 0,
 				},
 				{
-					CaseBase: newTestCaseBase(
+					CaseBase: test.NewCaseBase(
 						"invalid Port upper bound",
 						nil,
 						true,
@@ -151,28 +72,28 @@ func TestAddressConfig(t *testing.T) {
 				"should error", func(t *testing.T) {
 					tests := []struct {
 						test.CaseBase
-						a Address
+						a server.Address
 					}{
 						{
-							CaseBase: newTestCaseBase(
+							CaseBase: test.NewCaseBase(
 								"empty Address",
-								ErrInvalidAddressLength,
+								server.ErrInvalidAddressLength,
 								true,
 							),
 							a: "",
 						},
 						{
-							CaseBase: newTestCaseBase(
+							CaseBase: test.NewCaseBase(
 								"Address with colon",
-								ErrInvalidAddressColon,
+								server.ErrInvalidAddressColon,
 								true,
 							),
 							a: "127.0.0.1:8080",
 						},
 						{
-							CaseBase: newTestCaseBase(
+							CaseBase: test.NewCaseBase(
 								"Address with path",
-								ErrInvalidAddressWithPath,
+								server.ErrInvalidAddressWithPath,
 								true,
 							),
 							a: "dingdong.com/api/v1",
@@ -192,10 +113,10 @@ func TestAddressConfig(t *testing.T) {
 				"should pass", func(t *testing.T) {
 					tests := []struct {
 						test.CaseBase
-						a Address
+						a server.Address
 					}{
 						{
-							CaseBase: newTestCaseBase(
+							CaseBase: test.NewCaseBase(
 								"just hostname",
 								nil,
 								false,
@@ -203,7 +124,7 @@ func TestAddressConfig(t *testing.T) {
 							a: "localhost",
 						},
 						{
-							CaseBase: newTestCaseBase(
+							CaseBase: test.NewCaseBase(
 								"hostname with TLD",
 								nil,
 								false,
@@ -230,10 +151,10 @@ func TestVersionConfig(t *testing.T) {
 		"validation", func(t *testing.T) {
 			tests := []struct {
 				test.CaseBase
-				v Version
+				v server.Version
 			}{
 				{
-					CaseBase: newTestCaseBase(
+					CaseBase: test.NewCaseBase(
 						"valid version",
 						"",
 						false,
@@ -241,41 +162,41 @@ func TestVersionConfig(t *testing.T) {
 					v: "1.2.3",
 				},
 				{
-					CaseBase: newTestCaseBase(
+					CaseBase: test.NewCaseBase(
 						"too few elements",
-						ErrInvalidVersionFormat,
+						server.ErrInvalidVersionFormat,
 						true,
 					),
 					v: "1.2",
 				},
 				{
-					CaseBase: newTestCaseBase(
+					CaseBase: test.NewCaseBase(
 						"too many elements",
-						ErrInvalidVersionFormat,
+						server.ErrInvalidVersionFormat,
 						true,
 					),
 					v: "1.2.3.4",
 				},
 				{
-					CaseBase: newTestCaseBase(
+					CaseBase: test.NewCaseBase(
 						"non-numeric element",
-						ErrInvalidVersionChars,
+						server.ErrInvalidVersionChars,
 						true,
 					),
 					v: "1.2.alpha",
 				},
 				{
-					CaseBase: newTestCaseBase(
+					CaseBase: test.NewCaseBase(
 						"non-numeric element with numeric",
-						ErrInvalidVersionChars,
+						server.ErrInvalidVersionChars,
 						true,
 					),
 					v: "1.2.7ae",
 				},
 				{
-					CaseBase: newTestCaseBase(
+					CaseBase: test.NewCaseBase(
 						"negative number",
-						ErrInvalidVersionSign,
+						server.ErrInvalidVersionSign,
 						true,
 					),
 					v: "1.2.-3",

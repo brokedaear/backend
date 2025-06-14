@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"backend.brokedaear.com"
 	"backend.brokedaear.com/internal/common/validator"
 )
 
@@ -19,14 +20,37 @@ type Config struct {
 	// Port number to bind to for the application.
 	Port Port
 
-	// Env is the runtime environment, such as "development" or "production"
-	Env Environment
+	// Env is the runtime environment, such as "development" or "production".
+	Env backend.Environment
 
-	// Version is the Version of the software.
+	// Version is the version of the software.
 	Version Version
 
 	// Telemetry determines if telemetry tracking for internals are enabled.
 	Telemetry bool
+}
+
+func NewConfig(addr string, port uint16, env string, version string) (*Config, error) {
+	a := Address(addr)
+	p := Port(port)
+	e, err := backend.EnvFromString(env)
+	if err != nil {
+		return nil, err
+	}
+	v := Version(version)
+
+	err = validator.Check(a, p, e, v)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Config{
+		Addr:      a,
+		Port:      p,
+		Env:       e,
+		Version:   v,
+		Telemetry: true,
+	}, nil
 }
 
 func (c Config) Validate() error {
@@ -35,25 +59,6 @@ func (c Config) Validate() error {
 
 func (c Config) Value() any {
 	return c
-}
-
-func NewConfig(addr string, port uint16, env uint8, version string) (*Config, error) {
-	a := Address(addr)
-	p := Port(port)
-	e := Environment(env)
-	v := Version(version)
-
-	err := validator.Check(a, p, e, v)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Config{
-		Addr:    a,
-		Port:    p,
-		Env:     e,
-		Version: v,
-	}, nil
 }
 
 // Port represents a layer 4 OSI Port.
@@ -114,35 +119,6 @@ func (a Address) Value() any {
 	return a.String()
 }
 
-// Environment specifies the application runtime Environment.
-type Environment uint8
-
-const (
-	EnvDevelopment Environment = iota
-	EnvStaging
-	EnvProduction
-	EnvCI
-)
-
-var environments = [...]string{"DEVELOPMENT", "STAGING", "PRODUCTION", "CI", "INVALID"}
-
-func (e Environment) String() string {
-	return environments[e]
-}
-
-func (e Environment) Validate() error {
-	totalEnvs := Environment(len(environments))
-	if e > totalEnvs {
-		return ErrInvalidEnvironment
-	}
-
-	return nil
-}
-
-func (e Environment) Value() any {
-	return uint8(e)
-}
-
 type Version string
 
 func (v Version) String() string {
@@ -150,8 +126,9 @@ func (v Version) String() string {
 }
 
 func (v Version) Validate() error {
+	const expectedVersionParts = 3 // major.minor.patch
 	elements := strings.Split(v.String(), ".")
-	if len(elements) != 3 {
+	if len(elements) != expectedVersionParts {
 		return ErrInvalidVersionFormat
 	}
 
@@ -180,7 +157,6 @@ func (c ConfigError) Error() string {
 }
 
 const (
-	ErrInvalidEnvironment     ConfigError = "Configured Environment invalid"
 	ErrInvalidPortRange       ConfigError = "Configured Port range must be [1024, 65535)"
 	ErrInvalidVersionFormat   ConfigError = "Configured Version must be of the format x.x.x"
 	ErrInvalidVersionChars    ConfigError = "Configured Version must only be an unsigned integer"

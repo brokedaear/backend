@@ -5,6 +5,7 @@
 package server
 
 import (
+	"context"
 	"net"
 
 	"backend.brokedaear.com/internal/common/telemetry"
@@ -18,9 +19,40 @@ type Base struct {
 	listener  net.Listener
 }
 
-func NewBase(logger Logger, config *Config) (*Base, error) {
+func NewBase(ctx context.Context, logger Logger, config *Config) (*Base, error) {
+	if config == nil {
+		return nil, ErrNilConfig
+	}
+
+	tc := &telemetry.Config{
+		ServiceName:    "",
+		ServiceVersion: config.Version.String(),
+		ServiceID:      "",
+		ExporterConfig: telemetry.ExporterConfig{
+			Type:     0,
+			Endpoint: "",
+			Insecure: false,
+			Headers:  nil,
+		},
+	}
+
+	t, err := telemetry.New(ctx, tc)
+	if err != nil {
+		return nil, err
+	}
+
 	return &Base{
-		logger: logger,
-		config: config,
+		logger:    logger,
+		config:    config,
+		listener:  nil,
+		Telemetry: t,
 	}, nil
 }
+
+type BaseError string
+
+func (b BaseError) Error() string {
+	return string(b)
+}
+
+var ErrNilConfig BaseError = "config is nil"

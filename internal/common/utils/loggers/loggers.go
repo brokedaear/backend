@@ -8,8 +8,6 @@
 package loggers
 
 import (
-	"log/slog"
-
 	"go.uber.org/zap"
 )
 
@@ -60,10 +58,10 @@ func NewZapProd() (*zap.Logger, func() error) {
 }
 
 // NewPrettySlog creates a logger using the stdlib `slog` package.
-func NewPrettySlog() *slog.Logger {
-	slogHandlerOptions := &slog.HandlerOptions{
-		Level: slog.LevelInfo,
-	}
-
-	return slog.New(New(slogHandlerOptions))
-}
+// func NewPrettySlog() *slog.Logger {
+// 	slogHandlerOptions := &slog.HandlerOptions{
+// 		Level: slog.LevelInfo,
+// 	}
+//
+// 	return slog.New(New(slogHandlerOptions))
+// }

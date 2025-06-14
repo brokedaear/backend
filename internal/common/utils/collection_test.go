@@ -2,12 +2,13 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package utils
+package utils_test
 
 import (
 	"testing"
 
 	"backend.brokedaear.com/internal/common/tests/assert"
+	"backend.brokedaear.com/internal/common/utils"
 )
 
 func TestFind(t *testing.T) {
@@ -19,7 +20,7 @@ func TestFind(t *testing.T) {
 			}
 			want := "ian"
 
-			v, ok := Find(fridayNightSquad, sieve, want)
+			v, ok := utils.Find(fridayNightSquad, sieve, want)
 
 			assert.Equal(t, true, ok)
 			assert.Equal(t, v, want)
@@ -48,7 +49,7 @@ func TestFind(t *testing.T) {
 
 			t.Run(
 				"exists", func(t *testing.T) {
-					v, ok := Find(fridayNightSquad, hasMostCrackedOut, ian)
+					v, ok := utils.Find(fridayNightSquad, hasMostCrackedOut, ian)
 
 					assert.True(t, ok)
 					assert.Equal(t, v, ian)
@@ -59,7 +60,7 @@ func TestFind(t *testing.T) {
 
 			t.Run(
 				"does not exist", func(t *testing.T) {
-					v, ok := Find(fridayNightSquad, hasMostCrackedOut, ian)
+					v, ok := utils.Find(fridayNightSquad, hasMostCrackedOut, ian)
 
 					assert.False(t, ok)
 					assert.NotEqual(t, v, ian)
@@ -76,7 +77,7 @@ func TestReduce(t *testing.T) {
 				return x * y
 			}
 
-			assert.Equal(t, Reduce([]int{1, 2, 3}, multiply, 1), 6)
+			assert.Equal(t, utils.Reduce([]int{1, 2, 3}, multiply, 1), 6)
 		},
 	)
 
@@ -86,7 +87,7 @@ func TestReduce(t *testing.T) {
 				return x + y
 			}
 
-			assert.Equal(t, Reduce([]string{"a", "b", "c"}, concatenate, ""), "abc")
+			assert.Equal(t, utils.Reduce([]string{"a", "b", "c"}, concatenate, ""), "abc")
 		},
 	)
 
@@ -102,7 +103,7 @@ func TestReduce(t *testing.T) {
 				{"tuna fish", 10},
 			}
 
-			assert.Equal(t, Reduce(cart, addItemValues, 0), 110)
+			assert.Equal(t, utils.Reduce(cart, addItemValues, 0), 110)
 		},
 	)
 }

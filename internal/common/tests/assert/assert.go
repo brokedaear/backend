@@ -87,7 +87,7 @@ func ErrorAndWant(t *testing.T, got error, want bool) {
 
 func errorAndWant(got error, want bool) error {
 	if (got != nil) != want {
-		return fmt.Errorf("error = %v, wantErr = %v", got, want)
+		return fmt.Errorf("error = %w, wantErr = %v", got, want)
 	}
 
 	return nil
@@ -138,9 +138,8 @@ func ErrorOrNoError(t *testing.T, got error, want bool) {
 func errorOrNoError(got error, want bool) error {
 	if want {
 		return errorAndWant(got, true)
-	} else {
-		return noError(got)
 	}
+	return noError(got)
 }
 
 func assertionError(got, want any) error {

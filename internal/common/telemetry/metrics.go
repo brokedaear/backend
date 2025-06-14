@@ -11,15 +11,17 @@ type Metric struct {
 	Description string
 }
 
-// MetricRequestDurationMillis is a metric that measures the latency of HTTP requests processed by the server, in milliseconds.
-var MetricRequestDurationMillis = Metric{
+// MetricRequestDurationMillis is a metric that measures the latency of HTTP
+// requests processed by the server, in milliseconds.
+var MetricRequestDurationMillis = Metric{ //nolint:gochecknoglobals // makes more sense like this.
 	Name:        "request_duration_millis",
 	Unit:        "ms",
 	Description: "Measures the latency of HTTP requests processed by the server, in milliseconds.",
 }
 
-// MetricRequestsInFlight is a metric that measures the number of requests currently being processed by the server.
-var MetricRequestsInFlight = Metric{
+// MetricRequestsInFlight is a metric that measures the number of requests
+// currently being processed by the server.
+var MetricRequestsInFlight = Metric{ //nolint:gochecknoglobals // makes more sense like this.
 	Name:        "requests_inflight",
 	Unit:        "{count}",
 	Description: "Measures the number of requests currently being processed by the server.",

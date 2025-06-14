@@ -16,24 +16,21 @@ import (
 )
 
 // newLoggerProvider creates a new logger provider with the OTLP gRPC exporter.
-func newLoggerProvider(res *resource.Resource, exporter log.Exporter) (
-	*log.LoggerProvider,
-	error,
-) {
+func newLoggerProvider(res *resource.Resource, exporter log.Exporter) *log.LoggerProvider {
 	processor := log.NewBatchProcessor(exporter)
 	lp := log.NewLoggerProvider(
 		log.WithProcessor(processor),
 		log.WithResource(res),
 	)
 
-	return lp, nil
+	return lp
 }
 
 // newMeterProvider creates a new meter provider with the OTLP gRPC exporter.
 func newMeterProvider(
 	res *resource.Resource,
 	exporter metric.Exporter,
-) (*metric.MeterProvider, error) {
+) *metric.MeterProvider {
 	mp := metric.NewMeterProvider(
 		metric.WithReader(metric.NewPeriodicReader(exporter)),
 		metric.WithResource(res),
@@ -41,14 +38,11 @@ func newMeterProvider(
 
 	otel.SetMeterProvider(mp)
 
-	return mp, nil
+	return mp
 }
 
 // newTracerProvider creates a new tracer provider with the OTLP gRPC exporter.
-func newTracerProvider(res *resource.Resource, exporter trace.SpanExporter) (
-	*trace.TracerProvider,
-	error,
-) {
+func newTracerProvider(res *resource.Resource, exporter trace.SpanExporter) *trace.TracerProvider {
 	tp := trace.NewTracerProvider(
 		trace.WithBatcher(exporter),
 		trace.WithResource(res),
@@ -56,7 +50,7 @@ func newTracerProvider(res *resource.Resource, exporter trace.SpanExporter) (
 
 	otel.SetTracerProvider(tp)
 
-	return tp, nil
+	return tp
 }
 
 // newResource creates a new OTEL resource.

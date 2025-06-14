@@ -28,9 +28,9 @@ type Product struct {
 	// our very first audio plugin.
 	Name string
 
-	// PriceId is found on stripe.
-	PriceId string
+	// PriceID is found on stripe.
+	PriceID string
 
-	// ProductId is found on stripe.
-	ProductId string
+	// ProductID is found on stripe.
+	ProductID string
 }

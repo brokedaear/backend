@@ -15,6 +15,6 @@ echo "Linting Licenses..."
 reuse lint
 
 echo "Running Go tests..."
-gotestsum --format testdox ./internal/...
+gotestsum --format testdox ./...
 
 figlet -f cricket Cherreh

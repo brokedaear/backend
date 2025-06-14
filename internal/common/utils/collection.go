@@ -10,14 +10,15 @@ package utils
 // value of the value is returned along with false.
 //
 // Retrieved from: https://quii.gitbook.io/learn-go-with-tests/go-fundamentals/revisiting-arrays-and-slices-with-generics.
-func Find[A any](collection []A, finder func(A, A) bool, target A) (value A, ok bool) {
+func Find[A any](collection []A, finder func(A, A) bool, target A) (A, bool) {
 	for _, item := range collection {
 		if finder(item, target) {
 			return item, true
 		}
 	}
 
-	return
+	var zero A
+	return zero, false
 }
 
 // Reduce takes a collection of elements A and applies a reduction function
