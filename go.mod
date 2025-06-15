@@ -52,6 +52,7 @@ require (
 )
 
 require (
+	github.com/alexliesenfeld/health v0.8.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.36.0 // indirect
 	go.opentelemetry.io/otel/log v0.12.2 // indirect
 	golang.org/x/text v0.25.0 // indirect

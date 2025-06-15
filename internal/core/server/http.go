@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/alexliesenfeld/health"
 	"github.com/pkg/errors"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
@@ -23,7 +24,7 @@ import (
 // teardown operations.
 type HTTPServer interface {
 	ListenAndServe(context.Context) error
-	RegisterRoutes(...HTTPRoute)
+	// RegisterRoutes(...HTTPRoute)
 	io.Closer
 }
 
@@ -52,12 +53,19 @@ func NewHTTPServer(ctx context.Context, logger Logger, config *Config) (HTTPServ
 		return nil, err
 	}
 
+	mux := http.NewServeMux()
+
+	checker := health.NewChecker(health.WithCacheDuration(1*time.Second), health.WithTimeout(10*time.Second))
+
+	mux.Handle("/health", health.NewHandler(checker))
+
 	return &httpServer{
 		Base: b,
 		srv: &http.Server{
 			IdleTimeout:  time.Minute,
 			ReadTimeout:  readTimeout,
 			WriteTimeout: writeTimeout,
+			Handler:      mux,
 		},
 	}, nil
 }
@@ -73,7 +81,6 @@ func (s httpServer) ListenAndServe(ctx context.Context) error {
 
 	defer serverCancel()
 
-	// routes = append(routes, routeHealthcheck)
 	go func() {
 		defer serverCancel()
 		err := s.srv.Serve(s.listener)
