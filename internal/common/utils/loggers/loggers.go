@@ -8,6 +8,9 @@
 package loggers
 
 import (
+	"errors"
+	"syscall"
+
 	"go.uber.org/zap"
 )
 
@@ -47,7 +50,19 @@ func (l *ZapLogger) Error(msg string, args ...any) {
 }
 
 func (l *ZapLogger) Sync() error {
-	return l.zap.Sync()
+	// Without this mess here, Zap will error on any exit. This has something to
+	// do with something about file writing. Here's a thread related to
+	// this issue:
+	// https://github.com/uber-go/zap/issues/880
+	//
+	// The solution was nabbed from:
+	// https://github.com/uber-go/zap/issues/991#issuecomment-962098428
+
+	err := l.zap.Sync()
+	if err != nil && !errors.Is(err, syscall.ENOTTY) {
+		return err
+	}
+	return nil
 }
 
 // NewZapProd creates a zap logger. It also returns the logger's flushing
