@@ -19,7 +19,7 @@ import (
 
 func TestNewLoggerProvider(t *testing.T) {
 	ctx := t.Context()
-	res := newResource("test-service", "1.0.0", "test-id")
+	res := NewResource("test-service", "1.0.0", "test-id")
 
 	exporter, err := stdoutlog.New()
 	assert.NoError(t, err)
@@ -27,7 +27,7 @@ func TestNewLoggerProvider(t *testing.T) {
 		_ = exporter.Shutdown(ctx)
 	}()
 
-	provider := newLoggerProvider(res, exporter)
+	provider := NewLoggerProvider(res, exporter)
 	if provider == nil {
 		t.Error("expected non-nil provider")
 	}
@@ -39,7 +39,7 @@ func TestNewLoggerProvider(t *testing.T) {
 
 func TestNewMeterProvider(t *testing.T) {
 	ctx := t.Context()
-	res := newResource("test-service", "1.0.0", "test-id")
+	res := NewResource("test-service", "1.0.0", "test-id")
 
 	exporter, err := stdoutmetric.New()
 	assert.NoError(t, err)
@@ -47,7 +47,7 @@ func TestNewMeterProvider(t *testing.T) {
 		_ = exporter.Shutdown(ctx)
 	}()
 
-	provider := newMeterProvider(res, exporter)
+	provider := NewMeterProvider(res, exporter)
 	if provider == nil {
 		t.Error("expected non-nil provider")
 	}
@@ -64,7 +64,7 @@ func TestNewMeterProvider(t *testing.T) {
 
 func TestNewTracerProvider(t *testing.T) {
 	ctx := t.Context()
-	res := newResource("test-service", "1.0.0", "test-id")
+	res := NewResource("test-service", "1.0.0", "test-id")
 
 	exporter, err := stdouttrace.New()
 	assert.NoError(t, err)
@@ -72,7 +72,7 @@ func TestNewTracerProvider(t *testing.T) {
 		_ = exporter.Shutdown(ctx)
 	}()
 
-	provider := newTracerProvider(res, exporter)
+	provider := NewTracerProvider(res, exporter)
 	if provider == nil {
 		t.Error("expected non-nil provider")
 	}
@@ -122,7 +122,7 @@ func TestNewResource(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(
 			tt.name, func(t *testing.T) {
-				res := newResource(tt.serviceName, tt.serviceVersion, tt.serviceID)
+				res := NewResource(tt.serviceName, tt.serviceVersion, tt.serviceID)
 
 				if res == nil {
 					t.Error("expected non-nil resource")
@@ -174,7 +174,7 @@ func TestNewResource(t *testing.T) {
 func TestNewResourceWithEmptyHostname(t *testing.T) {
 	// This test handles the case where os.Hostname() might return an error
 	// The function should still work and create a resource
-	res := newResource("test-service", "1.0.0", "test-id")
+	res := NewResource("test-service", "1.0.0", "test-id")
 
 	if res == nil {
 		t.Error("expected non-nil resource")
@@ -194,7 +194,7 @@ func TestNewResourceWithEmptyHostname(t *testing.T) {
 
 func TestProviderIntegration(t *testing.T) {
 	ctx := t.Context()
-	res := newResource("integration-test", "1.0.0", "integration-id")
+	res := NewResource("integration-test", "1.0.0", "integration-id")
 
 	// Create exporters
 	logExporter, err := stdoutlog.New()
@@ -216,17 +216,17 @@ func TestProviderIntegration(t *testing.T) {
 	}()
 
 	// Create providers
-	logProvider := newLoggerProvider(res, logExporter)
+	logProvider := NewLoggerProvider(res, logExporter)
 	defer func() {
 		_ = logProvider.Shutdown(ctx)
 	}()
 
-	metricProvider := newMeterProvider(res, metricExporter)
+	metricProvider := NewMeterProvider(res, metricExporter)
 	defer func() {
 		_ = metricProvider.Shutdown(ctx)
 	}()
 
-	traceProvider := newTracerProvider(res, traceExporter)
+	traceProvider := NewTracerProvider(res, traceExporter)
 	defer func() {
 		_ = traceProvider.Shutdown(ctx)
 	}()
@@ -257,13 +257,13 @@ func TestProviderIntegration(t *testing.T) {
 func BenchmarkNewResource(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		_ = newResource("benchmark-service", "1.0.0", "benchmark-id")
+		_ = NewResource("benchmark-service", "1.0.0", "benchmark-id")
 	}
 }
 
 func BenchmarkNewLoggerProvider(b *testing.B) {
 	ctx := b.Context()
-	res := newResource("benchmark-service", "1.0.0", "benchmark-id")
+	res := NewResource("benchmark-service", "1.0.0", "benchmark-id")
 	exporter, _ := stdoutlog.New()
 	defer func() {
 		_ = exporter.Shutdown(ctx)
@@ -271,14 +271,14 @@ func BenchmarkNewLoggerProvider(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		provider := newLoggerProvider(res, exporter)
+		provider := NewLoggerProvider(res, exporter)
 		_ = provider.Shutdown(ctx)
 	}
 }
 
 func BenchmarkNewMeterProvider(b *testing.B) {
 	ctx := b.Context()
-	res := newResource("benchmark-service", "1.0.0", "benchmark-id")
+	res := NewResource("benchmark-service", "1.0.0", "benchmark-id")
 	exporter, _ := stdoutmetric.New()
 	defer func() {
 		_ = exporter.Shutdown(ctx)
@@ -286,14 +286,14 @@ func BenchmarkNewMeterProvider(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		provider := newMeterProvider(res, exporter)
+		provider := NewMeterProvider(res, exporter)
 		_ = provider.Shutdown(ctx)
 	}
 }
 
 func BenchmarkNewTracerProvider(b *testing.B) {
 	ctx := b.Context()
-	res := newResource("benchmark-service", "1.0.0", "benchmark-id")
+	res := NewResource("benchmark-service", "1.0.0", "benchmark-id")
 	exporter, _ := stdouttrace.New()
 	defer func() {
 		_ = exporter.Shutdown(ctx)
@@ -301,7 +301,7 @@ func BenchmarkNewTracerProvider(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		provider := newTracerProvider(res, exporter)
+		provider := NewTracerProvider(res, exporter)
 		_ = provider.Shutdown(ctx)
 	}
 }

@@ -17,4 +17,7 @@ reuse lint
 echo "Running Go tests..."
 gotestsum --format testdox ./...
 
+echo "Let's see da stats"
+tokei .
+
 figlet -f cricket Cherreh

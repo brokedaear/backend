@@ -33,6 +33,8 @@ type httpServer struct {
 	srv *http.Server
 }
 
+const httpHealthTimeout = 10 * time.Second
+
 // NewHTTPServer creates a new HTTP server using a logger and a config.
 // The server comes with telemetry enabled by default.
 func NewHTTPServer(ctx context.Context, logger Logger, config *Config) (HTTPServer, error) {
@@ -55,7 +57,7 @@ func NewHTTPServer(ctx context.Context, logger Logger, config *Config) (HTTPServ
 
 	mux := http.NewServeMux()
 
-	checker := health.NewChecker(health.WithCacheDuration(1*time.Second), health.WithTimeout(10*time.Second))
+	checker := health.NewChecker(health.WithCacheDuration(1*time.Second), health.WithTimeout(httpHealthTimeout))
 
 	mux.Handle("/health", health.NewHandler(checker))
 
@@ -132,7 +134,8 @@ func (s httpServer) RegisterRoutes(routes ...HTTPRoute) {
 	s.srv.Handler = s.registerRoutes(routes...)
 }
 
-// registerRoutes needs to be REFACTORED. TODO.
+// registerRoutes needs to be REFACTORED.
+// TODO: Refactor registerRoutes
 func (s httpServer) registerRoutes(routes ...HTTPRoute) http.Handler {
 	mux := http.NewServeMux()
 

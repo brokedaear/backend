@@ -10,32 +10,31 @@ import (
 	"backend.brokedaear.com/internal/core/server"
 )
 
-type monitorServer struct {
+type appServer struct {
 	server.HTTPServer
 	logger server.Logger
 }
 
-func newMonitorServer(
+func newAppServer(
 	ctx context.Context,
 	logger server.Logger,
 	config *server.Config,
-) (*monitorServer, error) {
+) (*appServer, error) {
 	s, err := server.NewHTTPServer(ctx, logger, config)
 	if err != nil {
 		return nil, err
 	}
 
-	return &monitorServer{
+	return &appServer{
 		HTTPServer: s,
 		logger:     logger,
 	}, nil
 }
 
-func (s *monitorServer) Start(ctx context.Context) error {
-	s.logger.Info("hello from start")
+func (s *appServer) Start(ctx context.Context) error {
 	return s.ListenAndServe(ctx)
 }
 
-func (s *monitorServer) Close() error {
+func (s *appServer) Close() error {
 	return s.HTTPServer.Close()
 }

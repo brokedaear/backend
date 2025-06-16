@@ -45,6 +45,7 @@ Below is the style guide and choices for writing code. The focal point of these 
 Prefer error verbosity over shorthands. Go has `err != nil` shorthands that allow the programmer to combine two lines of code into a single line. You must not follow this method. Instead, keep error declaration and nil checking in two lines. Here is an example:
 
 YES:
+
 ```go
 err := a.DoSomething()
 if err != nil {
@@ -53,12 +54,12 @@ if err != nil {
 ```
 
 NO:
+
 ```go
 if err := a.DoSomething(); err != nil {
 return err
 }
 ```
-
 
 ### Comments
 
@@ -74,10 +75,38 @@ var s string
 if s == "goat" {
     return
 } else if s == "neo" {
-	// This place is where things happen.
-    
+ // This place is where things happen.
+
     fmt.Println("neoooo")
 }
 ```
 
 All comments must end in a period.
+
+### Functions
+
+No named returns. Named returns make code harder to read.
+
+### Testing
+
+For unit testing, black box tests are done in packages with the `_test` suffix. White box testing can be done by creating a file with the name of the original file and appending the `_internal_test` suffix. This file then uses the same package as the package being tested.
+
+#### Black box
+
+```go
+// pkg_test.go
+
+package pkg_test
+
+// Tests for public fields, methods, and functions...
+```
+
+#### White box
+
+```go
+// pkg_internal_test.go
+
+package pkg
+
+// Tests for private fields, methods, and functions...
+```

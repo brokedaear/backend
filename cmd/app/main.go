@@ -14,6 +14,7 @@ import (
 
 	"golang.org/x/sync/errgroup"
 
+	"backend.brokedaear.com"
 	"backend.brokedaear.com/internal/common/infra"
 	"backend.brokedaear.com/internal/common/utils/loggers"
 	"backend.brokedaear.com/internal/core/server"
@@ -27,14 +28,27 @@ const (
 )
 
 func main() {
-	if err := run(); err != nil {
+	err := run()
+	if err != nil {
 		fmt.Printf("application error: %v\n", err) //nolint:forbidigo // structured logger not available on init failure
 		os.Exit(1)
 	}
 }
 
 func run() error {
-	logger, err := loggers.NewZap()
+	env, err := backend.EnvFromString(environment)
+	if err != nil {
+		return fmt.Errorf("failed to parse environment: %w", err)
+	}
+
+	config := &loggers.ZapConfig{
+		Env:                env,
+		OtelServiceName:    "app",
+		OtelLoggerProvider: nil,
+		CustomZapper:       nil,
+		WithTelemetry:      false,
+	}
+	logger, err := loggers.NewZap(config)
 	if err != nil {
 		return fmt.Errorf("failed to initialize logger: %w", err)
 	}
@@ -62,7 +76,7 @@ func run() error {
 		return fmt.Errorf("failed to initialize config: %w", err)
 	}
 
-	s, err := newMonitorServer(ctx, logger, cfg)
+	s, err := newAppServer(ctx, logger, cfg)
 	if err != nil {
 		logger.Error("failed to create monitor server", "error", err)
 		return fmt.Errorf("failed to create monitor server: %w", err)
@@ -71,7 +85,7 @@ func run() error {
 	return runService(ctx, logger, s)
 }
 
-func runService(ctx context.Context, logger server.Logger, s *monitorServer) error {
+func runService(ctx context.Context, logger server.Logger, s *appServer) error {
 	g, gCtx := errgroup.WithContext(ctx)
 
 	g.Go(

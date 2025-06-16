@@ -15,8 +15,8 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 )
 
-// newLoggerProvider creates a new logger provider with the OTLP gRPC exporter.
-func newLoggerProvider(res *resource.Resource, exporter log.Exporter) *log.LoggerProvider {
+// NewLoggerProvider creates a new logger provider with the OTLP gRPC exporter.
+func NewLoggerProvider(res *resource.Resource, exporter log.Exporter) *log.LoggerProvider {
 	processor := log.NewBatchProcessor(exporter)
 	lp := log.NewLoggerProvider(
 		log.WithProcessor(processor),
@@ -26,8 +26,8 @@ func newLoggerProvider(res *resource.Resource, exporter log.Exporter) *log.Logge
 	return lp
 }
 
-// newMeterProvider creates a new meter provider with the OTLP gRPC exporter.
-func newMeterProvider(
+// NewMeterProvider creates a new meter provider with the OTLP gRPC exporter.
+func NewMeterProvider(
 	res *resource.Resource,
 	exporter metric.Exporter,
 ) *metric.MeterProvider {
@@ -41,8 +41,8 @@ func newMeterProvider(
 	return mp
 }
 
-// newTracerProvider creates a new tracer provider with the OTLP gRPC exporter.
-func newTracerProvider(res *resource.Resource, exporter trace.SpanExporter) *trace.TracerProvider {
+// NewTracerProvider creates a new tracer provider with the OTLP gRPC exporter.
+func NewTracerProvider(res *resource.Resource, exporter trace.SpanExporter) *trace.TracerProvider {
 	tp := trace.NewTracerProvider(
 		trace.WithBatcher(exporter),
 		trace.WithResource(res),
@@ -53,8 +53,8 @@ func newTracerProvider(res *resource.Resource, exporter trace.SpanExporter) *tra
 	return tp
 }
 
-// newResource creates a new OTEL resource.
-func newResource(name, version, id string) *resource.Resource {
+// NewResource creates a new OTEL resource.
+func NewResource(name, version, id string) *resource.Resource {
 	hostName, _ := os.Hostname()
 
 	return resource.NewWithAttributes(

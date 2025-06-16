@@ -44,31 +44,21 @@ func New(ctx context.Context, config *Config) (Telemetry, error) {
 		return nil, errors.Wrap(err, "invalid telemetry config")
 	}
 
-	rp := newResource(config.ServiceName, config.ServiceVersion, config.ServiceID)
+	rp := NewResource(config.ServiceName, config.ServiceVersion, config.ServiceID)
 
 	le, err := newLoggerExporter(ctx, config.ExporterConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	lp := newLoggerProvider(rp, le)
-	// logger := zap.New(
-	// 	zapcore.NewTee(
-	// 		zapcore.NewCore(
-	// 			zapcore.NewJSONEncoder(zap.NewProductionEncoderConfig()),
-	// 			zapcore.AddSync(os.Stdout),
-	// 			zapcore.InfoLevel,
-	// 		),
-	// 		otelzap.NewCore(cfg.ServiceName, otelzap.WithLoggerProvider(lp)),
-	// 	),
-	// )
+	lp := NewLoggerProvider(rp, le)
 
 	me, err := newMetricExporter(ctx, config.ExporterConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	mp := newMeterProvider(rp, me)
+	mp := NewMeterProvider(rp, me)
 
 	meter := mp.Meter(config.ServiceName)
 
@@ -77,7 +67,7 @@ func New(ctx context.Context, config *Config) (Telemetry, error) {
 		return nil, err
 	}
 
-	tp := newTracerProvider(rp, te)
+	tp := NewTracerProvider(rp, te)
 
 	tracer := tp.Tracer(config.ServiceName)
 
@@ -118,7 +108,6 @@ func (t *otelTelemetry) UpDownCounter(metric Metric) (
 		otelmetric.WithDescription(metric.Description),
 		otelmetric.WithUnit(metric.Unit),
 	)
-
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create int64 up down counter")
 	}
@@ -133,7 +122,6 @@ func (t *otelTelemetry) Gauge(metric Metric) (otelmetric.Int64Gauge, error) {
 		otelmetric.WithDescription(metric.Description),
 		otelmetric.WithUnit(metric.Unit),
 	)
-
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create int64 gauge")
 	}

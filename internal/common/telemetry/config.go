@@ -58,10 +58,21 @@ func (c Config) Value() any {
 
 // ExporterConfig holds configuration for an OTEL exporter.
 type ExporterConfig struct {
-	Type     ExporterType
+	// Type defines the type of exporter. There are three options:
+	// GRPC, HTTP, or file.
+	Type ExporterType
+
+	// Endpoint is the endpoint where OTEL will bind to. It takes the shape
+	// of a hostname and port.
 	Endpoint string
+
+	// Insecure defines whether the exporter will use a secure
+	// means of communication, such as TLS.
 	Insecure bool
-	Headers  map[string]string
+
+	// Headers defines any HTTP headers that could be sent with the
+	// request to the endpoint.
+	Headers map[string]string
 }
 
 func NewExporterConfig(
@@ -212,8 +223,10 @@ const (
 	ExporterTypeStdout
 )
 
-const serviceNameLimit = 255
-const serviceNameMinimum = 1
+const (
+	serviceNameLimit   = 255
+	serviceNameMinimum = 1
+)
 
 func validateServiceName(name string) error {
 	name = strings.TrimSpace(name)
