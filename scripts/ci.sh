@@ -6,18 +6,25 @@
 
 set -e
 
-figlet -f small BrokeDaCI
+printf "\n\n"
+figlet -f chunky BrokeDaCI
 
 echo "Linting Go Files..."
 golangci-lint run
 
+printf "\n\n"
+
 echo "Linting Licenses..."
 reuse lint
 
+printf "\n\n"
+figlet -f chunky Tests
 echo "Running Go tests..."
 gotestsum --format testdox ./...
 
-echo "Let's see da stats"
+printf "\n\n"
+figlet -f chunky CLOC
 tokei .
 
-figlet -f cricket Cherreh
+printf "\n\n"
+figlet -f cricket allPau! | dotacat
