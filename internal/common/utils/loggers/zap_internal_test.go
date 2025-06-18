@@ -39,7 +39,10 @@ func Test_zapFieldsFromArgs(t *testing.T) {
 		{
 			CaseBase: test.NewCaseBase("multiple string keys with values", nil, false),
 			args:     []any{"key1", "value1", "key2", 42, "key3", true},
-			expect:   []zap.Field{zap.Any("key1", "value1"), zap.Any("key2", 42), zap.Any("key3", true)},
+			expect: []zap.Field{zap.Any("key1", "value1"), zap.Any("key2", 42), zap.Any(
+				"key3",
+				true,
+			)},
 		},
 		{
 			CaseBase: test.NewCaseBase("odd number of args truncates last", nil, false),
@@ -69,17 +72,19 @@ func Test_zapFieldsFromArgs(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		t.Run(tc.Name, func(t *testing.T) {
-			got := zapFieldsFromArgs(tc.args...)
+		t.Run(
+			tc.Name, func(t *testing.T) {
+				got := zapFieldsFromArgs(tc.args...)
 
-			assert.Equal(t, len(got), len(tc.expect))
+				assert.Equal(t, len(got), len(tc.expect))
 
-			for i, field := range got {
-				assert.Equal(t, field.Key, tc.expect[i].Key)
-				assert.Equal(t, field.Type, tc.expect[i].Type)
-				assert.Equal(t, field.Interface, tc.expect[i].Interface)
-			}
-		})
+				for i, field := range got {
+					assert.Equal(t, field.Key, tc.expect[i].Key)
+					assert.Equal(t, field.Type, tc.expect[i].Type)
+					assert.Equal(t, field.Interface, tc.expect[i].Interface)
+				}
+			},
+		)
 	}
 }
 
@@ -218,42 +223,44 @@ func Test_switchZapProdLogger(t *testing.T) {
 	}
 
 	for _, tc := range testCases {
-		t.Run(tc.Name, func(t *testing.T) {
-			// Need to call zapConfigFromEnv to get the base config
-			zapConfig, configErr := zapConfigFromEnv(tc.config.Env)
-			assert.NoError(t, configErr)
+		t.Run(
+			tc.Name, func(t *testing.T) {
+				// Need to call zapConfigFromEnv to get the base config
+				zapConfig, configErr := zapConfigFromEnv(tc.config.Env)
+				assert.NoError(t, configErr)
 
-			l, err := switchZapProdLogger(tc.config, zapConfig, tc.cores...)
+				l, err := switchZapProdLogger(tc.config, zapConfig, tc.cores...)
 
-			assert.ErrorOrNoError(t, err, tc.expectError)
+				assert.ErrorOrNoError(t, err, tc.expectError)
 
-			if tc.expectLogger {
-				assert.Equal(t, l != nil, true)
+				if tc.expectLogger {
+					assert.Equal(t, l != nil, true)
 
-				// Verify the logger implements the logger interface
-				if l != nil {
-					// Test that basic logging methods work
-					l.Info("test info message")
-					l.Debug("test debug message")
-					l.Warn("test warn message")
-					l.Error("test error message")
+					// Verify the logger implements the logger interface
+					if l != nil {
+						// Test that basic logging methods work
+						l.Info("test info message")
+						l.Debug("test debug message")
+						l.Warn("test warn message")
+						l.Error("test error message")
 
-					// Test sync method
-					syncErr := l.Sync()
-					// Sync should either succeed or fail with a non-ENOTTY error
-					if syncErr != nil {
-						assert.False(t, errors.Is(syncErr, syscall.ENOTTY))
+						// Test sync method
+						syncErr := l.Sync()
+						// Sync should either succeed or fail with a non-ENOTTY error
+						if syncErr != nil {
+							assert.False(t, errors.Is(syncErr, syscall.ENOTTY))
+						}
 					}
+				} else {
+					assert.Equal(t, l == nil, true)
 				}
-			} else {
-				assert.Equal(t, l == nil, true)
-			}
 
-			// Verify error message for telemetry enabled without provider
-			if tc.config.WithTelemetry && tc.config.OtelLoggerProvider == nil {
-				assert.Equal(t, err.Error(), "telemetry enabled but no logger provider")
-			}
-		})
+				// Verify error message for telemetry enabled without provider
+				if tc.config.WithTelemetry && tc.config.OtelLoggerProvider == nil {
+					assert.Equal(t, err.Error(), "telemetry enabled but no logger provider")
+				}
+			},
+		)
 	}
 }
 

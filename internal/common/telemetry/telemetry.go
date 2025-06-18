@@ -49,7 +49,7 @@ func New(ctx context.Context, config *Config) (Telemetry, error) {
 		return nil, errors.Wrap(err, "invalid telemetry config")
 	}
 
-	rp := NewResource(config.ServiceName, config.ServiceVersion, config.ServiceID)
+	rp := NewResource(string(config.ServiceName), config.ServiceVersion, config.ServiceID)
 
 	le, err := newLoggerExporter(ctx, config.ExporterConfig)
 	if err != nil {
@@ -65,7 +65,7 @@ func New(ctx context.Context, config *Config) (Telemetry, error) {
 
 	mp := NewMeterProvider(rp, me)
 
-	meter := mp.Meter(config.ServiceName)
+	meter := mp.Meter(string(config.ServiceName))
 
 	te, err := newTraceExporter(ctx, config.ExporterConfig)
 	if err != nil {
@@ -74,7 +74,7 @@ func New(ctx context.Context, config *Config) (Telemetry, error) {
 
 	tp := NewTracerProvider(rp, te)
 
-	tracer := tp.Tracer(config.ServiceName)
+	tracer := tp.Tracer(string(config.ServiceName))
 
 	return &otelTelemetry{
 		lp:     lp,

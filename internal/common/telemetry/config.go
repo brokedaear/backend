@@ -15,38 +15,37 @@ import (
 
 // Config is the configuration for telemetry.
 type Config struct {
-	ServiceName    string
+	ServiceName    ServiceName
 	ServiceVersion string
 	ServiceID      string
 	ExporterConfig ExporterConfig
 }
 
 func (c Config) Validate() error {
-	if strings.TrimSpace(c.ServiceName) == "" {
-		return ErrNoServiceName
-	}
+	var errs []error
 
-	if strings.TrimSpace(c.ServiceVersion) == "" {
-		return ErrNoServiceVersion
-	}
-
-	if strings.TrimSpace(c.ServiceID) == "" {
-		return ErrNoServiceID
-	}
-
-	err := validateServiceName(c.ServiceName)
+	err := c.ServiceName.Validate()
 	if err != nil {
-		return errors.Wrap(err, ErrInvalidServiceName.Error())
+		errs = append(errs, errors.Wrap(err, ErrInvalidServiceName.Error()))
 	}
 
-	err = validateServiceVersion(c.ServiceVersion)
+	err = ServiceVersion(c.ServiceVersion).Validate()
 	if err != nil {
-		return errors.Wrap(err, ErrInvalidServiceVersion.Error())
+		errs = append(errs, errors.Wrap(err, ErrInvalidServiceVersion.Error()))
+	}
+
+	err = ServiceID(c.ServiceID).Validate()
+	if err != nil {
+		errs = append(errs, errors.Wrap(err, ErrNoServiceID.Error()))
 	}
 
 	err = c.ExporterConfig.Validate()
 	if err != nil {
-		return errors.Wrap(err, ErrInvalidExporterConfig.Error())
+		errs = append(errs, errors.Wrap(err, ErrInvalidExporterConfig.Error()))
+	}
+
+	if len(errs) > 0 {
+		return errors.Join(errs...)
 	}
 
 	return nil
@@ -56,6 +55,42 @@ func (c Config) Value() any {
 	return c
 }
 
+type ServiceName string
+
+func (s ServiceName) Validate() error {
+	return validateServiceName(string(s))
+}
+
+func (s ServiceName) Value() any {
+	return string(s)
+}
+
+type ServiceVersion string
+
+func (s ServiceVersion) Validate() error {
+	if strings.TrimSpace(string(s)) == "" {
+		return ErrNoServiceVersion
+	}
+	return nil
+}
+
+func (s ServiceVersion) Value() any {
+	return string(s)
+}
+
+type ServiceID string
+
+func (s ServiceID) Validate() error {
+	if strings.TrimSpace(string(s)) == "" {
+		return ErrNoServiceID
+	}
+	return nil
+}
+
+func (s ServiceID) Value() any {
+	return string(s)
+}
+
 // ExporterConfig holds configuration for an OTEL exporter.
 type ExporterConfig struct {
 	// Type defines the type of exporter. There are three options:
@@ -63,8 +98,8 @@ type ExporterConfig struct {
 	Type ExporterType
 
 	// Endpoint is the endpoint where OTEL will bind to. It takes the shape
-	// of a hostname and port.
-	Endpoint string
+	// of a hostname and port. HTTP(S) endpoints must include a protocol scheme.
+	Endpoint ExporterEndpoint
 
 	// Insecure defines whether the exporter will use a secure
 	// means of communication, such as TLS.
@@ -75,65 +110,127 @@ type ExporterConfig struct {
 	Headers map[string]string
 }
 
-func NewExporterConfig(
-	typ ExporterType,
-	endpoint string,
-	insecure bool,
-	headers map[string]string,
-) ExporterConfig {
-	return ExporterConfig{
-		Type:     typ,
-		Endpoint: endpoint,
-		Insecure: insecure,
-		Headers:  headers,
+type ExporterEndpoint struct {
+	URL string
+	url *url.URL
+	t   *ExporterType
+}
+
+func newExporterEndpoint(url string) ExporterEndpoint {
+	return ExporterEndpoint{
+		URL: url,
+		url: nil,
+		t:   nil,
+	}
+}
+
+func (e ExporterEndpoint) Validate() error {
+	if e.url == nil {
+		return errors.New("exporter URL must be set")
+	}
+	if e.t == nil {
+		return errors.New("exporter type unspecified")
+	}
+	return nil
+}
+
+func (e ExporterEndpoint) Value() any {
+	return e
+}
+
+type ExportConfigOption func(*ExporterConfig)
+
+func NewExporterConfig(opts ...ExportConfigOption) *ExporterConfig {
+	rawURL := "localhost:4317"
+	u, _ := url.Parse(rawURL)
+	t := ExporterTypeGRPC
+	e := &ExporterConfig{
+		Type: t,
+		Endpoint: ExporterEndpoint{
+			URL: rawURL,
+			url: u,
+			t:   &t,
+		},
+		Insecure: true,
+		Headers:  make(map[string]string),
+	}
+	for _, opt := range opts {
+		opt(e)
+	}
+	return e
+}
+
+func WithType(typ ExporterType) ExportConfigOption {
+	return func(c *ExporterConfig) {
+		c.Type = typ
+	}
+}
+
+func WithEndpoint(endpoint string) ExportConfigOption {
+	return func(c *ExporterConfig) {
+		c.Endpoint = newExporterEndpoint(endpoint)
+	}
+}
+
+// TODO: implement security for GRPC
+// func WithSecurity(security type like TLS) ExportConfigOption {}
+
+func WithHeaders(headers map[string]string) ExportConfigOption {
+	return func(c *ExporterConfig) {
+		c.Headers = headers
 	}
 }
 
 func (e ExporterConfig) Validate() error {
+	var errs []error
+
 	err := e.Type.Validate()
 	if err != nil {
-		return err
+		errs = append(errs, err)
 	}
 
-	// Validate endpoint based on exporter type
 	switch e.Type {
 	case ExporterTypeGRPC:
 		err = e.validateGRPCEndpoint()
 		if err != nil {
-			return err
+			errs = append(errs, err)
 		}
 	case ExporterTypeHTTP:
 		err = e.validateHTTPEndpoint()
 		if err != nil {
-			return err
+			errs = append(errs, err)
 		}
 	case ExporterTypeStdout:
 		err = e.validateStdoutEndpoint()
 		if err != nil {
-			return err
+			errs = append(errs, err)
 		}
 	}
 
 	err = e.validateHeaders()
 	if err != nil {
-		return err
+		errs = append(errs, err)
+	}
+
+	if len(errs) > 0 {
+		return errors.Join(errs...)
 	}
 
 	return nil
 }
 
 func (e ExporterConfig) validateGRPCEndpoint() error {
-	if strings.TrimSpace(e.Endpoint) == "" {
+	if strings.TrimSpace(e.Endpoint.URL) == "" {
 		return ErrEndpointRequired
 	}
 
 	// gRPC endpoints should be host:port format, not URLs with schemes
-	if strings.Contains(e.Endpoint, "://") {
+	if strings.Contains(e.Endpoint.URL, "://") {
 		return ErrGRPCEndpointNoScheme
 	}
 
 	// Basic validation that it looks like host:port
-	if !strings.Contains(e.Endpoint, ":") {
+	if !strings.Contains(e.Endpoint.URL, ":") {
 		return ErrGRPCEndpointMissingPort
 	}
 
@@ -141,11 +238,11 @@ func (e ExporterConfig) validateGRPCEndpoint() error {
 }
 
 func (e ExporterConfig) validateHTTPEndpoint() error {
-	if strings.TrimSpace(e.Endpoint) == "" {
+	if strings.TrimSpace(e.Endpoint.URL) == "" {
 		return ErrEndpointRequired
 	}
 
-	parsedURL, err := url.Parse(e.Endpoint)
+	parsedURL, err := url.Parse(e.Endpoint.URL)
 	if err != nil {
 		return ErrInvalidEndpointURL
 	}
@@ -163,14 +260,14 @@ func (e ExporterConfig) validateHTTPEndpoint() error {
 
 func (e ExporterConfig) validateStdoutEndpoint() error {
 	// For stdout exporter, endpoint is optional (represents file path)
-	if e.Endpoint != "" {
-		if strings.TrimSpace(e.Endpoint) == "" {
+	if e.Endpoint.URL != "" {
+		if strings.TrimSpace(e.Endpoint.URL) == "" {
 			return ErrInvalidFilePath
 		}
 
 		invalidChars := []string{"\x00", "\n", "\r"}
 		for _, char := range invalidChars {
-			if strings.Contains(e.Endpoint, char) {
+			if strings.Contains(e.Endpoint.URL, char) {
 				return ErrFilePathInvalidChar
 			}
 		}

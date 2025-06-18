@@ -18,12 +18,10 @@ func newTelConfig() *telemetry.Config {
 		ServiceName:    "test-service",
 		ServiceVersion: "1.0.0",
 		ServiceID:      "test-id",
-		ExporterConfig: telemetry.ExporterConfig{
-			Type:     telemetry.ExporterTypeStdout,
-			Endpoint: "",
-			Insecure: true,
-			Headers:  make(map[string]string),
-		},
+		ExporterConfig: *telemetry.NewExporterConfig(
+			telemetry.WithType(telemetry.ExporterTypeStdout),
+			telemetry.WithEndpoint(""),
+		),
 	}
 }
 
@@ -51,12 +49,10 @@ func TestNewWithInvalidConfig(t *testing.T) {
 		ServiceName:    "test-!service",
 		ServiceID:      "test-id",
 		ServiceVersion: "1.abc0.0",
-		ExporterConfig: telemetry.ExporterConfig{
-			Type:     telemetry.ExporterTypeStdout,
-			Endpoint: "",
-			Insecure: true,
-			Headers:  make(map[string]string),
-		},
+		ExporterConfig: *telemetry.NewExporterConfig(
+			telemetry.WithType(telemetry.ExporterTypeStdout),
+			telemetry.WithEndpoint(""),
+		),
 	}
 
 	tel, err := telemetry.New(ctx, cfg)

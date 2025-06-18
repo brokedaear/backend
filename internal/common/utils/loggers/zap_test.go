@@ -32,33 +32,35 @@ func TestZapLogger_Sync(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.Name, func(t *testing.T) {
-			// Use zaptest.NewLogger to create a logger that doesn't write to stderr
-			// avoiding the sync issues in test environments.
-			testLogger := zaptest.NewLogger(t)
+		t.Run(
+			tt.Name, func(t *testing.T) {
+				// Use zaptest.NewLogger to create a logger that doesn't write to stderr
+				// avoiding the sync issues in test environments.
+				testLogger := zaptest.NewLogger(t)
 
-			config := &loggers.ZapConfig{
-				Env:                backend.EnvDevelopment,
-				OtelServiceName:    "",
-				OtelLoggerProvider: nil,
-				CustomZapper:       nil,
-				WithTelemetry:      false,
-			}
-			logger, err := loggers.NewZap(config)
-			assert.NoError(t, err)
+				config := &loggers.ZapConfig{
+					Env:                backend.EnvDevelopment,
+					OtelServiceName:    "",
+					OtelLoggerProvider: nil,
+					CustomZapper:       nil,
+					WithTelemetry:      false,
+				}
+				logger, err := loggers.NewZap(config)
+				assert.NoError(t, err)
 
-			// Write some log entries to ensure there's something to sync.
-			logger.Info("broke da ear woo hoo")
-			logger.Debug("debug yes sir")
+				// Write some log entries to ensure there's something to sync.
+				logger.Info("broke da ear woo hoo")
+				logger.Debug("debug yes sir")
 
-			err = logger.Sync()
-			if err != nil {
-				assert.False(t, errors.Is(err, syscall.ENOTTY))
-			}
+				err = logger.Sync()
+				if err != nil {
+					assert.False(t, errors.Is(err, syscall.ENOTTY))
+				}
 
-			testErr := testLogger.Sync()
-			assert.NoError(t, testErr)
-		})
+				testErr := testLogger.Sync()
+				assert.NoError(t, testErr)
+			},
+		)
 	}
 }
 
@@ -139,22 +141,24 @@ func TestZapLogger_Sync_MockedZapBehavior(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.Name, func(t *testing.T) {
-			// Create a custom logger with our mock syncer
-			core := zapcore.NewCore(
-				zapcore.NewJSONEncoder(zap.NewDevelopmentEncoderConfig()),
-				&mockWriteSyncer{syncError: tt.syncError},
-				zapcore.DebugLevel,
-			)
-			zapLogger := zap.New(core)
+		t.Run(
+			tt.Name, func(t *testing.T) {
+				// Create a custom logger with our mock syncer
+				core := zapcore.NewCore(
+					zapcore.NewJSONEncoder(zap.NewDevelopmentEncoderConfig()),
+					&mockWriteSyncer{syncError: tt.syncError},
+					zapcore.DebugLevel,
+				)
+				zapLogger := zap.New(core)
 
-			err := zapLogger.Sync()
-			assert.ErrorOrNoError(t, err, tt.WantErr)
+				err := zapLogger.Sync()
+				assert.ErrorOrNoError(t, err, tt.WantErr)
 
-			if tt.syncError != nil {
-				assert.True(t, errors.Is(err, tt.syncError))
-			}
-		})
+				if tt.syncError != nil {
+					assert.True(t, errors.Is(err, tt.syncError))
+				}
+			},
+		)
 	}
 }
 
@@ -356,58 +360,60 @@ func TestZapProductionLogger_StructuredFieldsEdgeCases(t *testing.T) {
 	}
 
 	for i, tt := range tests {
-		t.Run(tt.Name, func(t *testing.T) {
-			b, bWriter := newBufAndWriter()
-			mockWriter := newMockCustomWriter(bWriter)
-			writerKey := fmt.Sprintf("testwriter-edge-%d", i)
-			customZapWriter := loggers.NewCustomZapWriter(
-				writerKey+":testoutput",
-				writerKey,
-				"func",
-				mockWriter,
-			)
+		t.Run(
+			tt.Name, func(t *testing.T) {
+				b, bWriter := newBufAndWriter()
+				mockWriter := newMockCustomWriter(bWriter)
+				writerKey := fmt.Sprintf("testwriter-edge-%d", i)
+				customZapWriter := loggers.NewCustomZapWriter(
+					writerKey+":testoutput",
+					writerKey,
+					"func",
+					mockWriter,
+				)
 
-			config := &loggers.ZapConfig{
-				Env:                backend.EnvStaging,
-				OtelServiceName:    "test-service",
-				OtelLoggerProvider: nil,
-				CustomZapper:       customZapWriter,
-				WithTelemetry:      false,
-			}
-			logger, err := loggers.NewZap(config)
-			assert.NoError(t, err)
-
-			logger.Info("test message", tt.args...)
-
-			bWriter.Flush()
-
-			err = logger.Sync()
-			if err != nil {
-				assert.False(t, errors.Is(err, syscall.ENOTTY))
-			}
-
-			entries, err := parseLogOutput(t, b)
-			assert.NoError(t, err)
-			assert.Equal(t, len(entries), 1)
-
-			entry := entries[0]
-			assert.Equal(t, entry.Level, "info")
-			assert.Equal(t, entry.Message, "test message")
-			assert.Equal(t, len(entry.Fields), tt.expectedPairs)
-
-			// Validate specific field values for mixed types test.
-
-			if tt.Name == "mixed types" {
-				assert.Equal(t, entry.Fields["string_key"], "string_val")
-				// JSON unmarshals numbers as float64
-				intVal, ok := entry.Fields["int_key"].(float64)
-				if ok {
-					assert.Equal(t, intVal, 42.0)
+				config := &loggers.ZapConfig{
+					Env:                backend.EnvStaging,
+					OtelServiceName:    "test-service",
+					OtelLoggerProvider: nil,
+					CustomZapper:       customZapWriter,
+					WithTelemetry:      false,
 				}
-				assert.Equal(t, entry.Fields["bool_key"].(bool), true)
-				assert.Equal(t, entry.Fields["float_key"].(float64), 3.14)
-			}
-		})
+				logger, err := loggers.NewZap(config)
+				assert.NoError(t, err)
+
+				logger.Info("test message", tt.args...)
+
+				bWriter.Flush()
+
+				err = logger.Sync()
+				if err != nil {
+					assert.False(t, errors.Is(err, syscall.ENOTTY))
+				}
+
+				entries, err := parseLogOutput(t, b)
+				assert.NoError(t, err)
+				assert.Equal(t, len(entries), 1)
+
+				entry := entries[0]
+				assert.Equal(t, entry.Level, "info")
+				assert.Equal(t, entry.Message, "test message")
+				assert.Equal(t, len(entry.Fields), tt.expectedPairs)
+
+				// Validate specific field values for mixed types test.
+
+				if tt.Name == "mixed types" {
+					assert.Equal(t, entry.Fields["string_key"], "string_val")
+					// JSON unmarshals numbers as float64
+					intVal, ok := entry.Fields["int_key"].(float64)
+					if ok {
+						assert.Equal(t, intVal, 42.0)
+					}
+					assert.Equal(t, entry.Fields["bool_key"].(bool), true)
+					assert.Equal(t, entry.Fields["float_key"].(float64), 3.14)
+				}
+			},
+		)
 	}
 }
 
@@ -548,19 +554,21 @@ func TestCustomZapWriter_Validation(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.Name, func(t *testing.T) {
-			_, bWriter := newBufAndWriter()
-			mockWriter := newMockCustomWriter(bWriter)
-			customZapWriter := loggers.NewCustomZapWriter(
-				tt.customPath,
-				tt.customWriterKey,
-				tt.customFunctionKey,
-				mockWriter,
-			)
+		t.Run(
+			tt.Name, func(t *testing.T) {
+				_, bWriter := newBufAndWriter()
+				mockWriter := newMockCustomWriter(bWriter)
+				customZapWriter := loggers.NewCustomZapWriter(
+					tt.customPath,
+					tt.customWriterKey,
+					tt.customFunctionKey,
+					mockWriter,
+				)
 
-			err := customZapWriter.Validate()
-			assert.ErrorOrNoError(t, err, tt.expectError)
-		})
+				err := customZapWriter.Validate()
+				assert.ErrorOrNoError(t, err, tt.expectError)
+			},
+		)
 	}
 }
 

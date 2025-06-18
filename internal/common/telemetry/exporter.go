@@ -40,8 +40,8 @@ func newLoggerExporter(ctx context.Context, config ExporterConfig) (log.Exporter
 func newGRPCExporter(ctx context.Context, config ExporterConfig) (log.Exporter, error) {
 	var opts []otlploggrpc.Option
 
-	if config.Endpoint != "" {
-		opts = append(opts, otlploggrpc.WithEndpoint(config.Endpoint))
+	if config.Endpoint.URL != "" {
+		opts = append(opts, otlploggrpc.WithEndpoint(config.Endpoint.URL))
 	}
 
 	if config.Insecure {
@@ -58,8 +58,8 @@ func newGRPCExporter(ctx context.Context, config ExporterConfig) (log.Exporter, 
 func newHTTPExporter(ctx context.Context, config ExporterConfig) (log.Exporter, error) {
 	var opts []otlploghttp.Option
 
-	if config.Endpoint != "" {
-		opts = append(opts, otlploghttp.WithEndpoint(config.Endpoint))
+	if config.Endpoint.URL != "" {
+		opts = append(opts, otlploghttp.WithEndpoint(config.Endpoint.URL))
 	}
 
 	if config.Insecure {
@@ -77,10 +77,10 @@ func newStdoutExporter(_ context.Context, config ExporterConfig) (log.Exporter, 
 	var opts []stdoutlog.Option
 
 	// Optional: write to a file instead of stdout
-	if config.Endpoint != "" {
-		file, err := os.OpenFile(config.Endpoint, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
+	if config.Endpoint.URL != "" {
+		file, err := os.OpenFile(config.Endpoint.URL, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 		if err != nil {
-			return nil, fmt.Errorf("failed to open file %s: %w", config.Endpoint, err)
+			return nil, fmt.Errorf("failed to open file %s: %w", config.Endpoint.URL, err)
 		}
 		opts = append(opts, stdoutlog.WithWriter(file))
 	}
@@ -108,8 +108,8 @@ func newMetricExporter(ctx context.Context, config ExporterConfig) (metric.Expor
 func newGRPCMetricExporter(ctx context.Context, config ExporterConfig) (metric.Exporter, error) {
 	var opts []otlpmetricgrpc.Option
 
-	if config.Endpoint != "" {
-		opts = append(opts, otlpmetricgrpc.WithEndpoint(config.Endpoint))
+	if config.Endpoint.URL != "" {
+		opts = append(opts, otlpmetricgrpc.WithEndpoint(config.Endpoint.URL))
 	}
 
 	if config.Insecure {
@@ -126,8 +126,8 @@ func newGRPCMetricExporter(ctx context.Context, config ExporterConfig) (metric.E
 func newHTTPMetricExporter(ctx context.Context, config ExporterConfig) (metric.Exporter, error) {
 	var opts []otlpmetrichttp.Option
 
-	if config.Endpoint != "" {
-		opts = append(opts, otlpmetrichttp.WithEndpoint(config.Endpoint))
+	if config.Endpoint.URL != "" {
+		opts = append(opts, otlpmetrichttp.WithEndpoint(config.Endpoint.URL))
 	}
 
 	if config.Insecure {
@@ -145,10 +145,10 @@ func newStdoutMetricExporter(_ context.Context, config ExporterConfig) (metric.E
 	var opts []stdoutmetric.Option
 
 	// Optional: write to a file instead of stdout
-	if config.Endpoint != "" {
-		file, err := os.OpenFile(config.Endpoint, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
+	if config.Endpoint.URL != "" {
+		file, err := os.OpenFile(config.Endpoint.URL, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 		if err != nil {
-			return nil, fmt.Errorf("failed to open file %s: %w", config.Endpoint, err)
+			return nil, fmt.Errorf("failed to open file %s: %w", config.Endpoint.URL, err)
 		}
 		opts = append(opts, stdoutmetric.WithWriter(file))
 	}
@@ -176,8 +176,8 @@ func newTraceExporter(ctx context.Context, config ExporterConfig) (trace.SpanExp
 func newGRPCTraceExporter(ctx context.Context, config ExporterConfig) (trace.SpanExporter, error) {
 	var opts []otlptracegrpc.Option
 
-	if config.Endpoint != "" {
-		opts = append(opts, otlptracegrpc.WithEndpoint(config.Endpoint))
+	if config.Endpoint.URL != "" {
+		opts = append(opts, otlptracegrpc.WithEndpoint(config.Endpoint.URL))
 	}
 
 	if config.Insecure {
@@ -194,8 +194,8 @@ func newGRPCTraceExporter(ctx context.Context, config ExporterConfig) (trace.Spa
 func newHTTPTraceExporter(ctx context.Context, config ExporterConfig) (trace.SpanExporter, error) {
 	var opts []otlptracehttp.Option
 
-	if config.Endpoint != "" {
-		opts = append(opts, otlptracehttp.WithEndpoint(config.Endpoint))
+	if config.Endpoint.URL != "" {
+		opts = append(opts, otlptracehttp.WithEndpoint(config.Endpoint.URL))
 	}
 
 	if config.Insecure {
@@ -216,10 +216,10 @@ func newStdoutTraceExporter(_ context.Context, config ExporterConfig) (
 	var opts []stdouttrace.Option
 
 	// Optional: write to a file instead of stdout
-	if config.Endpoint != "" {
-		file, err := os.OpenFile(config.Endpoint, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
+	if config.Endpoint.URL != "" {
+		file, err := os.OpenFile(config.Endpoint.URL, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
 		if err != nil {
-			return nil, fmt.Errorf("failed to open file %s: %w", config.Endpoint, err)
+			return nil, fmt.Errorf("failed to open file %s: %w", config.Endpoint.URL, err)
 		}
 		opts = append(opts, stdouttrace.WithWriter(file))
 	}

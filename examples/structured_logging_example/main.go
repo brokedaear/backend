@@ -23,11 +23,9 @@ func main() {
 		ServiceName:    "logging-example",
 		ServiceVersion: "1.0.0",
 		ServiceID:      "local-instance-1",
-		ExporterConfig: telemetry.NewExporterConfig(
-			telemetry.ExporterTypeGRPC,
-			"localhost:4317",
-			true,
-			nil,
+		ExporterConfig: *telemetry.NewExporterConfig(
+			telemetry.WithType(telemetry.ExporterTypeGRPC),
+			telemetry.WithEndpoint("localhost:4317"),
 		),
 	}
 

@@ -25,12 +25,10 @@ func TestConfig_Validate(t *testing.T) {
 				ServiceName:    "my.service",
 				ServiceVersion: "1.0.0",
 				ServiceID:      "service-123",
-				ExporterConfig: ExporterConfig{
-					Type:     ExporterTypeGRPC,
-					Endpoint: "localhost:4317",
-					Insecure: true,
-					Headers:  make(map[string]string),
-				},
+				ExporterConfig: *NewExporterConfig(
+					WithType(ExporterTypeGRPC),
+					WithEndpoint("localhost:4317"),
+				),
 			},
 		},
 		{
@@ -39,12 +37,9 @@ func TestConfig_Validate(t *testing.T) {
 				ServiceName:    "",
 				ServiceVersion: "1.0.0",
 				ServiceID:      "service-123",
-				ExporterConfig: ExporterConfig{
-					Type:     ExporterTypeStdout,
-					Endpoint: "",
-					Insecure: false,
-					Headers:  make(map[string]string),
-				},
+				ExporterConfig: *NewExporterConfig(
+					WithType(ExporterTypeStdout),
+				),
 			},
 		},
 		{
@@ -57,12 +52,9 @@ func TestConfig_Validate(t *testing.T) {
 				ServiceName:    "   ",
 				ServiceVersion: "1.0.0",
 				ServiceID:      "service-123",
-				ExporterConfig: ExporterConfig{
-					Type:     ExporterTypeStdout,
-					Endpoint: "",
-					Insecure: false,
-					Headers:  make(map[string]string),
-				},
+				ExporterConfig: *NewExporterConfig(
+					WithType(ExporterTypeStdout),
+				),
 			},
 		},
 		{
@@ -75,12 +67,9 @@ func TestConfig_Validate(t *testing.T) {
 				ServiceName:    "my.service",
 				ServiceVersion: "",
 				ServiceID:      "service-123",
-				ExporterConfig: ExporterConfig{
-					Type:     ExporterTypeStdout,
-					Endpoint: "",
-					Insecure: false,
-					Headers:  make(map[string]string),
-				},
+				ExporterConfig: *NewExporterConfig(
+					WithType(ExporterTypeStdout),
+				),
 			},
 		},
 		{
@@ -89,7 +78,9 @@ func TestConfig_Validate(t *testing.T) {
 				ServiceName:    "my.service",
 				ServiceVersion: "1.0.0",
 				ServiceID:      "",
-				ExporterConfig: NewExporterConfig(ExporterTypeStdout, "", false, nil),
+				ExporterConfig: *NewExporterConfig(
+					WithType(ExporterTypeStdout),
+				),
 			},
 		},
 		{
@@ -98,12 +89,9 @@ func TestConfig_Validate(t *testing.T) {
 				ServiceName:    "my service!",
 				ServiceVersion: "1.0.0",
 				ServiceID:      "service-123",
-				ExporterConfig: ExporterConfig{
-					Type:     ExporterTypeStdout,
-					Endpoint: "",
-					Insecure: false,
-					Headers:  make(map[string]string),
-				},
+				ExporterConfig: *NewExporterConfig(
+					WithType(ExporterTypeStdout),
+				),
 			},
 		},
 		{
@@ -114,7 +102,7 @@ func TestConfig_Validate(t *testing.T) {
 				ServiceID:      "service-123",
 				ExporterConfig: ExporterConfig{
 					Type:     ExporterTypeGRPC,
-					Endpoint: "", // missing required endpoint
+					Endpoint: newExporterEndpoint(""),
 					Insecure: false,
 					Headers:  make(map[string]string),
 				},
@@ -141,18 +129,17 @@ func TestExporterConfig_Validate(t *testing.T) {
 	tests := []ExporterConfigTestCase{
 		{
 			CaseBase: test.NewCaseBase("valid grpc config", nil, false),
-			Config: ExporterConfig{
-				Type:     ExporterTypeGRPC,
-				Endpoint: "localhost:4317",
-				Insecure: true,
-				Headers:  map[string]string{"api-key": "secret"},
-			},
+			Config: *NewExporterConfig(
+				WithType(ExporterTypeGRPC),
+				WithEndpoint("localhost:4317"),
+				WithHeaders(map[string]string{"api-key": "secret"}),
+			),
 		},
 		{
 			CaseBase: test.NewCaseBase("valid http config", nil, false),
 			Config: ExporterConfig{
 				Type:     ExporterTypeHTTP,
-				Endpoint: "https://api.example.com/v1/traces",
+				Endpoint: newExporterEndpoint("https://api.example.com/v1/traces"),
 				Insecure: false,
 				Headers:  make(map[string]string),
 			},
@@ -161,7 +148,7 @@ func TestExporterConfig_Validate(t *testing.T) {
 			CaseBase: test.NewCaseBase("valid stdout config", nil, false),
 			Config: ExporterConfig{
 				Type:     ExporterTypeStdout,
-				Endpoint: "",
+				Endpoint: newExporterEndpoint(""),
 				Insecure: false,
 				Headers:  make(map[string]string),
 			},
@@ -170,7 +157,7 @@ func TestExporterConfig_Validate(t *testing.T) {
 			CaseBase: test.NewCaseBase("valid stdout config with file", nil, false),
 			Config: ExporterConfig{
 				Type:     ExporterTypeStdout,
-				Endpoint: "/tmp/otel-output.json",
+				Endpoint: newExporterEndpoint("/tmp/otel-output.json"),
 				Insecure: false,
 				Headers:  make(map[string]string),
 			},
@@ -179,7 +166,7 @@ func TestExporterConfig_Validate(t *testing.T) {
 			CaseBase: test.NewCaseBase("invalid exporter type", "invalid exporter type", true),
 			Config: ExporterConfig{
 				Type:     ExporterType(99),
-				Endpoint: "",
+				Endpoint: newExporterEndpoint(""),
 				Insecure: false,
 				Headers:  make(map[string]string),
 			},
@@ -192,7 +179,7 @@ func TestExporterConfig_Validate(t *testing.T) {
 			),
 			Config: ExporterConfig{
 				Type:     ExporterTypeGRPC,
-				Endpoint: "",
+				Endpoint: newExporterEndpoint(""),
 				Insecure: false,
 				Headers:  make(map[string]string),
 			},
@@ -205,16 +192,20 @@ func TestExporterConfig_Validate(t *testing.T) {
 			),
 			Config: ExporterConfig{
 				Type:     ExporterTypeHTTP,
-				Endpoint: "",
+				Endpoint: newExporterEndpoint(""),
 				Insecure: false,
 				Headers:  make(map[string]string),
 			},
 		},
 		{
-			CaseBase: test.NewCaseBase("grpc endpoint missing port", "gRPC endpoint must include a port", true),
+			CaseBase: test.NewCaseBase(
+				"grpc endpoint missing port",
+				"gRPC endpoint must include a port",
+				true,
+			),
 			Config: ExporterConfig{
 				Type:     ExporterTypeGRPC,
-				Endpoint: "localhost",
+				Endpoint: newExporterEndpoint("localhost"),
 				Insecure: false,
 				Headers:  make(map[string]string),
 			},
@@ -227,7 +218,7 @@ func TestExporterConfig_Validate(t *testing.T) {
 			),
 			Config: ExporterConfig{
 				Type:     ExporterTypeGRPC,
-				Endpoint: "http://localhost:4317",
+				Endpoint: newExporterEndpoint("http://localhost:4317"),
 				Insecure: false,
 				Headers:  make(map[string]string),
 			},
@@ -240,7 +231,7 @@ func TestExporterConfig_Validate(t *testing.T) {
 			),
 			Config: ExporterConfig{
 				Type:     ExporterTypeHTTP,
-				Endpoint: "http://",
+				Endpoint: newExporterEndpoint("http://"),
 				Insecure: false,
 				Headers:  make(map[string]string),
 			},
@@ -253,7 +244,7 @@ func TestExporterConfig_Validate(t *testing.T) {
 			),
 			Config: ExporterConfig{
 				Type:     ExporterTypeStdout,
-				Endpoint: "/path/with\x00null",
+				Endpoint: newExporterEndpoint("/path/with\x00null"),
 				Insecure: false,
 				Headers:  make(map[string]string),
 			},
@@ -262,7 +253,7 @@ func TestExporterConfig_Validate(t *testing.T) {
 			CaseBase: test.NewCaseBase("invalid header key", "header key cannot be empty", true),
 			Config: ExporterConfig{
 				Type:     ExporterTypeGRPC,
-				Endpoint: "localhost:4317",
+				Endpoint: newExporterEndpoint("localhost:4317"),
 				Insecure: false,
 				Headers:  map[string]string{"": "value"},
 			},
@@ -275,7 +266,7 @@ func TestExporterConfig_Validate(t *testing.T) {
 			),
 			Config: ExporterConfig{
 				Type:     ExporterTypeGRPC,
-				Endpoint: "localhost:4317",
+				Endpoint: newExporterEndpoint("localhost:4317"),
 				Insecure: false,
 				Headers:  map[string]string{"api key": "value"},
 			},
@@ -288,7 +279,7 @@ func TestExporterConfig_Validate(t *testing.T) {
 			),
 			Config: ExporterConfig{
 				Type:     ExporterTypeGRPC,
-				Endpoint: "localhost:4317",
+				Endpoint: newExporterEndpoint("localhost:4317"),
 				Insecure: false,
 				Headers:  map[string]string{"api-key": "value\nwith\nnewlines"},
 			},
@@ -587,7 +578,7 @@ func BenchmarkConfig_Validate(b *testing.B) {
 		ServiceID:      "service-123",
 		ExporterConfig: ExporterConfig{
 			Type:     ExporterTypeGRPC,
-			Endpoint: "localhost:4317",
+			Endpoint: newExporterEndpoint("localhost:4317"),
 			Insecure: true,
 			Headers:  map[string]string{"api-key": "secret"},
 		},
@@ -602,7 +593,7 @@ func BenchmarkConfig_Validate(b *testing.B) {
 func BenchmarkExporterConfig_Validate(b *testing.B) {
 	config := ExporterConfig{
 		Type:     ExporterTypeGRPC,
-		Endpoint: "localhost:4317",
+		Endpoint: newExporterEndpoint("localhost:4317"),
 		Insecure: true,
 		Headers:  map[string]string{"api-key": "secret"},
 	}

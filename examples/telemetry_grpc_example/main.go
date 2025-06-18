@@ -26,14 +26,12 @@ func main() {
 
 	// Setup telemetry with gRPC exporter to local OpenTelemetry Collector
 	telConfig := &telemetry.Config{
-		ServiceName:    "brokedaear-backend",
-		ServiceVersion: "1.0.0",
+		ServiceName:    "brokedabackend",
+		ServiceVersion: "0.1.0",
 		ServiceID:      "local-instance-1",
-		ExporterConfig: telemetry.NewExporterConfig(
-			telemetry.ExporterTypeGRPC,
-			"localhost:4317", // OpenTelemetry Collector gRPC endpoint
-			true,             // Insecure for local development
-			nil,              // No auth headers needed for local
+		ExporterConfig: *telemetry.NewExporterConfig(
+			telemetry.WithType(telemetry.ExporterTypeGRPC),
+			telemetry.WithEndpoint("localhost:4317"), // OpenTelemetry Collector gRPC endpoint
 		),
 	}
 
@@ -52,7 +50,7 @@ func main() {
 		WithTelemetry:      true, // Enable telemetry integration
 	})
 	if err != nil {
-		fmt.Printf("failed to setup logger %v", err) //nolint:forbidigo // need.
+		fmt.Printf("failed to setup logger %v", err)
 		return
 	}
 
@@ -67,7 +65,7 @@ func main() {
 
 	srv, err := server.NewGRPCServer(ctx, logger, serverConfig)
 	if err != nil {
-		fmt.Printf("failed to setup grpc server %v", err) //nolint:forbidigo // need.
+		fmt.Printf("failed to setup grpc server %v", err)
 		return
 	}
 	defer srv.Close()
@@ -116,10 +114,11 @@ func setupHealthMonitoring(srv server.GRPCServer, tel telemetry.Telemetry, logge
 		return
 	}
 
-	// Monitor health every 30 seconds
+	const healthMonitorInterval = 30 * time.Second
+
 	go func() {
 		for {
-			<-time.After(30 * time.Second)
+			<-time.After(healthMonitorInterval)
 			ctx := context.Background()
 
 			// Start a trace for health monitoring
@@ -133,7 +132,7 @@ func setupHealthMonitoring(srv server.GRPCServer, tel telemetry.Telemetry, logge
 			}
 
 			// Record database health metric
-			dbHealthValue := int64(0)
+			var dbHealthValue int64
 			if dbHealthy {
 				dbHealthValue = 1
 			}
@@ -220,6 +219,8 @@ func generateSampleTelemetry(tel telemetry.Telemetry, _ server.GRPCServer, logge
 		return
 	}
 
+	workDuration := time.Duration(50+time.Now().UnixNano()%100) * time.Millisecond
+
 	for {
 		<-time.After(5 * time.Second)
 		ctx := context.Background()
@@ -228,16 +229,17 @@ func generateSampleTelemetry(tel telemetry.Telemetry, _ server.GRPCServer, logge
 		ctx, span := tel.TraceStart(ctx, "sample_operation")
 
 		// Simulate some work
-		workDuration := time.Duration(50+time.Now().UnixNano()%100) * time.Millisecond
-		time.Sleep(workDuration)
+		select {
+		case <-time.After(workDuration):
+			// Record metrics
+			requestCounter.Add(ctx, 1)
+			responseTimeHistogram.Record(ctx, workDuration.Milliseconds())
 
-		// Record metrics
-		requestCounter.Add(ctx, 1)
-		responseTimeHistogram.Record(ctx, workDuration.Milliseconds())
+			span.End()
 
-		span.End()
-
-		logger.Debug("Generated sample telemetry data",
-			"duration_ms", workDuration.Milliseconds())
+			logger.Debug("Generated sample telemetry data",
+				"duration_ms", workDuration.Milliseconds())
+		default:
+		}
 	}
 }

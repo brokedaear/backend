@@ -26,7 +26,7 @@ func TestNewLoggerExporter(t *testing.T) {
 			CaseBase: test.NewCaseBase("grpc exporter", nil, false),
 			Config: ExporterConfig{
 				Type:     ExporterTypeGRPC,
-				Endpoint: "localhost:4317",
+				Endpoint: newExporterEndpoint("localhost:4317"),
 				Insecure: true,
 				Headers:  make(map[string]string),
 			},
@@ -35,7 +35,7 @@ func TestNewLoggerExporter(t *testing.T) {
 			CaseBase: test.NewCaseBase("http exporter", nil, false),
 			Config: ExporterConfig{
 				Type:     ExporterTypeHTTP,
-				Endpoint: "localhost:4318",
+				Endpoint: newExporterEndpoint("localhost:4318"),
 				Insecure: true,
 				Headers:  make(map[string]string),
 			},
@@ -44,7 +44,7 @@ func TestNewLoggerExporter(t *testing.T) {
 			CaseBase: test.NewCaseBase("stdout exporter", nil, false),
 			Config: ExporterConfig{
 				Type:     ExporterTypeStdout,
-				Endpoint: "",
+				Endpoint: newExporterEndpoint(""),
 				Insecure: false,
 				Headers:  make(map[string]string),
 			},
@@ -53,7 +53,7 @@ func TestNewLoggerExporter(t *testing.T) {
 			CaseBase: test.NewCaseBase("stdout exporter with file", nil, false),
 			Config: ExporterConfig{
 				Type:     ExporterTypeStdout,
-				Endpoint: filepath.Join(t.TempDir(), "test-logs.json"),
+				Endpoint: newExporterEndpoint(filepath.Join(t.TempDir(), "test-logs.json")),
 				Insecure: false,
 				Headers:  make(map[string]string),
 			},
@@ -66,7 +66,7 @@ func TestNewLoggerExporter(t *testing.T) {
 			),
 			Config: ExporterConfig{
 				Type:     ExporterType(99),
-				Endpoint: "",
+				Endpoint: newExporterEndpoint(""),
 				Insecure: false,
 				Headers:  make(map[string]string),
 			},
@@ -105,7 +105,7 @@ func TestNewMetricExporter(t *testing.T) {
 			CaseBase: test.NewCaseBase("grpc metric exporter", nil, false),
 			Config: ExporterConfig{
 				Type:     ExporterTypeGRPC,
-				Endpoint: "localhost:4317",
+				Endpoint: newExporterEndpoint("localhost:4317"),
 				Insecure: true,
 				Headers:  make(map[string]string),
 			},
@@ -114,7 +114,7 @@ func TestNewMetricExporter(t *testing.T) {
 			CaseBase: test.NewCaseBase("http metric exporter", nil, false),
 			Config: ExporterConfig{
 				Type:     ExporterTypeHTTP,
-				Endpoint: "localhost:4318",
+				Endpoint: newExporterEndpoint("localhost:4318"),
 				Insecure: true,
 				Headers:  make(map[string]string),
 			},
@@ -123,7 +123,7 @@ func TestNewMetricExporter(t *testing.T) {
 			CaseBase: test.NewCaseBase("stdout metric exporter", nil, false),
 			Config: ExporterConfig{
 				Type:     ExporterTypeStdout,
-				Endpoint: "",
+				Endpoint: newExporterEndpoint(""),
 				Insecure: false,
 				Headers:  make(map[string]string),
 			},
@@ -132,7 +132,7 @@ func TestNewMetricExporter(t *testing.T) {
 			CaseBase: test.NewCaseBase("stdout metric exporter with file", nil, false),
 			Config: ExporterConfig{
 				Type:     ExporterTypeStdout,
-				Endpoint: filepath.Join(t.TempDir(), "test-metrics.json"),
+				Endpoint: newExporterEndpoint(filepath.Join(t.TempDir(), "test-metrics.json")),
 				Insecure: false,
 				Headers:  make(map[string]string),
 			},
@@ -145,7 +145,7 @@ func TestNewMetricExporter(t *testing.T) {
 			),
 			Config: ExporterConfig{
 				Type:     ExporterType(99),
-				Endpoint: "",
+				Endpoint: newExporterEndpoint(""),
 				Insecure: false,
 				Headers:  make(map[string]string),
 			},
@@ -184,7 +184,7 @@ func TestNewTraceExporter(t *testing.T) {
 			CaseBase: test.NewCaseBase("grpc trace exporter", nil, false),
 			Config: ExporterConfig{
 				Type:     ExporterTypeGRPC,
-				Endpoint: "localhost:4317",
+				Endpoint: newExporterEndpoint("localhost:4317"),
 				Insecure: true,
 				Headers:  make(map[string]string),
 			},
@@ -193,7 +193,7 @@ func TestNewTraceExporter(t *testing.T) {
 			CaseBase: test.NewCaseBase("http trace exporter", nil, false),
 			Config: ExporterConfig{
 				Type:     ExporterTypeHTTP,
-				Endpoint: "localhost:4318",
+				Endpoint: newExporterEndpoint("localhost:4318"),
 				Insecure: true,
 				Headers:  make(map[string]string),
 			},
@@ -202,7 +202,7 @@ func TestNewTraceExporter(t *testing.T) {
 			CaseBase: test.NewCaseBase("stdout trace exporter", nil, false),
 			Config: ExporterConfig{
 				Type:     ExporterTypeStdout,
-				Endpoint: "",
+				Endpoint: newExporterEndpoint(""),
 				Insecure: true,
 				Headers:  make(map[string]string),
 			},
@@ -211,7 +211,7 @@ func TestNewTraceExporter(t *testing.T) {
 			CaseBase: test.NewCaseBase("stdout trace exporter with file", nil, false),
 			Config: ExporterConfig{
 				Type:     ExporterTypeStdout,
-				Endpoint: filepath.Join(t.TempDir(), "test-traces.json"),
+				Endpoint: newExporterEndpoint(filepath.Join(t.TempDir(), "test-traces.json")),
 				Insecure: true,
 				Headers:  make(map[string]string),
 			},
@@ -224,7 +224,7 @@ func TestNewTraceExporter(t *testing.T) {
 			),
 			Config: ExporterConfig{
 				Type:     ExporterType(99),
-				Endpoint: "",
+				Endpoint: newExporterEndpoint(""),
 				Insecure: true,
 				Headers:  make(map[string]string),
 			},
@@ -254,7 +254,7 @@ func TestNewStdoutExporterWithInvalidFile(t *testing.T) {
 	ctx := t.Context()
 	config := ExporterConfig{
 		Type:     ExporterTypeStdout,
-		Endpoint: "/invalid/path/that/does/not/exist/test.json",
+		Endpoint: newExporterEndpoint("/invalid/path/that/does/not/exist/test.json"),
 		Insecure: true,
 		Headers:  make(map[string]string),
 	}
@@ -272,7 +272,7 @@ func TestNewStdoutMetricExporterWithInvalidFile(t *testing.T) {
 	ctx := t.Context()
 	config := ExporterConfig{
 		Type:     ExporterTypeStdout,
-		Endpoint: "/invalid/path/that/does/not/exist/test.json",
+		Endpoint: newExporterEndpoint("/invalid/path/that/does/not/exist/test.json"),
 		Insecure: true,
 		Headers:  make(map[string]string),
 	}
@@ -290,7 +290,7 @@ func TestNewStdoutTraceExporterWithInvalidFile(t *testing.T) {
 	ctx := t.Context()
 	config := ExporterConfig{
 		Type:     ExporterTypeStdout,
-		Endpoint: "/invalid/path/that/does/not/exist/test.json",
+		Endpoint: newExporterEndpoint("/invalid/path/that/does/not/exist/test.json"),
 		Insecure: true,
 		Headers:  make(map[string]string),
 	}
@@ -308,7 +308,7 @@ func TestNewGRPCExporterWithHeaders(t *testing.T) {
 	ctx := t.Context()
 	config := ExporterConfig{
 		Type:     ExporterTypeGRPC,
-		Endpoint: "localhost:4317",
+		Endpoint: newExporterEndpoint("localhost:4317"),
 		Insecure: true,
 		Headers: map[string]string{
 			"api-key":    "test-key",
@@ -330,7 +330,7 @@ func TestNewHTTPExporterWithHeaders(t *testing.T) {
 	ctx := t.Context()
 	config := ExporterConfig{
 		Type:     ExporterTypeHTTP,
-		Endpoint: "localhost:4318",
+		Endpoint: newExporterEndpoint("localhost:4318"),
 		Insecure: true,
 		Headers: map[string]string{
 			"api-key":    "test-key",
@@ -355,7 +355,7 @@ func TestStdoutExporterWritesToFile(t *testing.T) {
 
 	config := ExporterConfig{
 		Type:     ExporterTypeStdout,
-		Endpoint: outputFile,
+		Endpoint: newExporterEndpoint(outputFile),
 		Insecure: true,
 		Headers:  make(map[string]string),
 	}
@@ -378,7 +378,7 @@ func BenchmarkNewLoggerExporter(b *testing.B) {
 	ctx := b.Context()
 	config := ExporterConfig{
 		Type:     ExporterTypeGRPC,
-		Endpoint: "localhost:4317",
+		Endpoint: newExporterEndpoint("localhost:4317"),
 		Insecure: true,
 		Headers:  make(map[string]string),
 	}
@@ -397,7 +397,7 @@ func BenchmarkNewMetricExporter(b *testing.B) {
 	ctx := b.Context()
 	config := ExporterConfig{
 		Type:     ExporterTypeGRPC,
-		Endpoint: "localhost:4317",
+		Endpoint: newExporterEndpoint("localhost:4317"),
 		Insecure: true,
 		Headers:  make(map[string]string),
 	}
@@ -416,7 +416,7 @@ func BenchmarkNewTraceExporter(b *testing.B) {
 	ctx := b.Context()
 	config := ExporterConfig{
 		Type:     ExporterTypeGRPC,
-		Endpoint: "localhost:4317",
+		Endpoint: newExporterEndpoint("localhost:4317"),
 		Insecure: true,
 		Headers:  make(map[string]string),
 	}
