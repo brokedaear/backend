@@ -56,6 +56,7 @@
             golangci-lint # Local/CI linter
             gotestsum # Pretty tester
             buf # protobuf linter/formatter
+            protobuf
           ]
           ++ da-flake.lib.${system}.ciPackages;
 
@@ -65,6 +66,7 @@
             gopls
             gotools
             stripe-cli # Stripe integration
+            protoc-gen-go
           ]
           ++ da-flake.lib.${system}.devPackages;
       in

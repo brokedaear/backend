@@ -20,6 +20,7 @@ import (
 
 type Telemetry interface {
 	Meters
+	LoggerProvider() *log.LoggerProvider
 	io.Closer
 }
 
@@ -140,6 +141,11 @@ func (t *otelTelemetry) TraceStart(ctx context.Context, name string) (
 ) { //nolint:ireturn // interface requires returning concrete type
 	//nolint:spancheck // span is intentionally returned for caller to manage
 	return t.tracer.Start(ctx, name)
+}
+
+// LoggerProvider returns the OpenTelemetry logger provider for log integration.
+func (t *otelTelemetry) LoggerProvider() *log.LoggerProvider {
+	return t.lp
 }
 
 // Close shuts down all the otelTelemetry facilities.

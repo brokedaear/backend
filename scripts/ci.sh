@@ -9,8 +9,11 @@ set -e
 printf "\n\n"
 figlet -f chunky BrokeDaCI
 
-echo "Linting Go Files..."
+echo "Linting Go files..."
 golangci-lint run
+
+echo "Linting Protobuf files..."
+protoc -I . --include_source_info "$(find . -name '*.proto')" -o /dev/stdout | buf lint -
 
 printf "\n\n"
 

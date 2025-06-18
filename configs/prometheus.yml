@@ -1,0 +1,31 @@
+# SPDX-FileCopyrightText: 2025 BROKE DA EAR LLC <https://brokedaear.com>
+#
+# SPDX-License-Identifier: Apache-2.0
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  # Add alerting rules here if needed
+  # - "alerts.yml"
+
+scrape_configs:
+  # Scrape metrics from OpenTelemetry Collector
+  - job_name: 'otel-collector-metrics'
+    static_configs:
+      - targets: ['otel-collector:8889']
+    scrape_interval: 10s
+    metrics_path: /metrics
+
+  # Scrape Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # If you want to scrape your app directly (optional)
+  - job_name: 'brokedaear-backend'
+    static_configs:
+      - targets: ['host.docker.internal:8080']  # Your gRPC server
+    scrape_interval: 10s
+    metrics_path: /metrics

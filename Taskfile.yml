@@ -17,6 +17,8 @@ tasks:
     cmds:
       - echo "Linting Go files"
       - task lint-go
+      - echo "linting Protobuf"
+      - task lint-proto
       - echo "Linting LICENSE"
       - task lint-license
   test:
@@ -29,6 +31,10 @@ tasks:
   lint-license: # lints LICENSE inclusions
     cmds:
       - reuse lint
+  lint-proto:
+    cmds:
+      # https://buf.build/docs/lint/#usage-examples
+      - protoc -I . --include_source_info "$(find . -name '*.proto')" -o /dev/stdout | buf lint -
   test-all:
     cmds:
       - gotestsum

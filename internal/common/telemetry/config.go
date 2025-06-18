@@ -97,8 +97,13 @@ func (e ExporterConfig) Validate() error {
 
 	// Validate endpoint based on exporter type
 	switch e.Type {
-	case ExporterTypeGRPC, ExporterTypeHTTP:
-		err = e.validateNetworkEndpoint()
+	case ExporterTypeGRPC:
+		err = e.validateGRPCEndpoint()
+		if err != nil {
+			return err
+		}
+	case ExporterTypeHTTP:
+		err = e.validateHTTPEndpoint()
 		if err != nil {
 			return err
 		}
@@ -117,7 +122,25 @@ func (e ExporterConfig) Validate() error {
 	return nil
 }
 
-func (e ExporterConfig) validateNetworkEndpoint() error {
+func (e ExporterConfig) validateGRPCEndpoint() error {
+	if strings.TrimSpace(e.Endpoint) == "" {
+		return ErrEndpointRequired
+	}
+
+	// gRPC endpoints should be host:port format, not URLs with schemes
+	if strings.Contains(e.Endpoint, "://") {
+		return ErrGRPCEndpointNoScheme
+	}
+
+	// Basic validation that it looks like host:port
+	if !strings.Contains(e.Endpoint, ":") {
+		return ErrGRPCEndpointMissingPort
+	}
+
+	return nil
+}
+
+func (e ExporterConfig) validateHTTPEndpoint() error {
 	if strings.TrimSpace(e.Endpoint) == "" {
 		return ErrEndpointRequired
 	}
@@ -134,12 +157,6 @@ func (e ExporterConfig) validateNetworkEndpoint() error {
 	if parsedURL.Host == "" {
 		return ErrEndpointMissingHost
 	}
-
-	// Warn about insecure HTTPS endpoints
-	// if parsedURL.Scheme == "https" && e.Insecure {
-	// This is a warning case, not an error - log this in real implementation
-	// For validation purposes, we'll allow it but could add a warning mechanism
-	// }
 
 	return nil
 }
@@ -323,6 +340,8 @@ var (
 	ErrInvalidEndpointURL         ConfigError = "invalid endpoint URL"
 	ErrInvalidEndpointScheme      ConfigError = "endpoint must use http or https scheme"
 	ErrEndpointMissingHost        ConfigError = "endpoint must include a host"
+	ErrGRPCEndpointNoScheme       ConfigError = "gRPC endpoint must not include scheme (use host:port format)"
+	ErrGRPCEndpointMissingPort    ConfigError = "gRPC endpoint must include a port (host:port format)"
 	ErrInvalidFilePath            ConfigError = "if specified, endpoint must be a valid file path"
 	ErrFilePathInvalidChar        ConfigError = "endpoint contains invalid character for file path"
 	ErrHeaderKeyEmpty             ConfigError = "header key cannot be empty"
