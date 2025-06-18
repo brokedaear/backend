@@ -48,7 +48,10 @@ func NewHTTPServer(ctx context.Context, logger Logger, config *Config) (HTTPServ
 		return nil, err
 	}
 
-	address := net.JoinHostPort(config.Addr.String(), config.Port.String())
+	address, err := config.newURIAddress()
+	if err != nil {
+		return nil, err
+	}
 
 	b.listener, err = net.Listen("tcp", address)
 	if err != nil {

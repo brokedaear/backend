@@ -5,8 +5,11 @@
 package server
 
 import (
+	"net"
 	"strconv"
 	"strings"
+
+	"github.com/pkg/errors"
 
 	"backend.brokedaear.com"
 	"backend.brokedaear.com/internal/common/validator"
@@ -61,6 +64,16 @@ func (c Config) Value() any {
 	return c
 }
 
+// newURIAddress creates a bindable URI address from Addr and Port.
+func (c Config) newURIAddress() (string, error) {
+	err := validator.Check(c.Addr, c.Port)
+	if err != nil {
+		return "", errors.Wrap(err, "failed to create new URI address from config")
+	}
+	address := net.JoinHostPort(c.Addr.String(), c.Port.String())
+	return address, err
+}
+
 // Port represents a layer 4 OSI Port.
 type Port uint16
 
@@ -89,12 +102,13 @@ func (a Address) String() string {
 }
 
 func (a Address) Validate() error {
-	var (
+	const (
 		colon        = ":"
 		space        = " "
 		forwardSlash = "/"
-		addr         = a.String()
 	)
+
+	addr := a.String()
 
 	if len(addr) == 0 {
 		return ErrInvalidAddressLength

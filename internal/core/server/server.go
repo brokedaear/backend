@@ -25,12 +25,12 @@ func NewBase(ctx context.Context, logger Logger, config *Config) (*Base, error) 
 	}
 
 	tc := &telemetry.Config{
-		ServiceName:    "",
+		ServiceName:    "server",
 		ServiceVersion: config.Version.String(),
-		ServiceID:      "",
+		ServiceID:      "server-1",
 		ExporterConfig: telemetry.ExporterConfig{
-			Type:     telemetry.ExporterTypeGRPC,
-			Endpoint: "localhost:4713",
+			Type:     telemetry.ExporterTypeStdout,
+			Endpoint: "",
 			Insecure: false,
 			Headers:  nil,
 		},

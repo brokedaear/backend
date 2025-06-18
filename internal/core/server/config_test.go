@@ -7,9 +7,9 @@ package server_test
 import (
 	"testing"
 
-	"backend.brokedaear.com/internal/core/server"
 	"backend.brokedaear.com/internal/common/tests/assert"
 	"backend.brokedaear.com/internal/common/tests/test"
+	"backend.brokedaear.com/internal/core/server"
 )
 
 func TestPortConfig(t *testing.T) {

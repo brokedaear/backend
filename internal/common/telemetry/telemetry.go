@@ -19,11 +19,15 @@ import (
 )
 
 type Telemetry interface {
+	Meters
+	io.Closer
+}
+
+type Meters interface {
 	Histogram(Metric) (otelmetric.Int64Histogram, error)
 	UpDownCounter(Metric) (otelmetric.Int64UpDownCounter, error)
 	Gauge(Metric) (otelmetric.Int64Gauge, error)
 	TraceStart(context.Context, string) (context.Context, oteltrace.Span)
-	io.Closer
 }
 
 // otelTelemetry wraps OpenTelemetry's logger, meter, and tracer with some
@@ -37,7 +41,7 @@ type otelTelemetry struct {
 	config *Config
 }
 
-// New creates a new otelTelemetry instance.
+// New creates a new Telemetry instance that can be used for metering.
 func New(ctx context.Context, config *Config) (Telemetry, error) {
 	err := config.Validate()
 	if err != nil {
