@@ -7,7 +7,7 @@ package assert
 import (
 	"testing"
 
-	"backend.brokedaear.com/internal/common/tests/test"
+	"backend.brokedaear.com/pkg/test"
 )
 
 func Test_errorAndWant(t *testing.T) {

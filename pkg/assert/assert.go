@@ -10,7 +10,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"backend.brokedaear.com/internal/common/tests/test"
+	"backend.brokedaear.com/pkg/test"
 )
 
 // TODO make Equal and NotEqual deep equals!

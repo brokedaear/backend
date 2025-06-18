@@ -7,8 +7,8 @@ package utils_test
 import (
 	"testing"
 
-	"backend.brokedaear.com/internal/common/tests/assert"
 	"backend.brokedaear.com/internal/common/utils"
+	"backend.brokedaear.com/pkg/assert"
 )
 
 func TestFind(t *testing.T) {

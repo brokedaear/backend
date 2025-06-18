@@ -10,7 +10,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 
 	"backend.brokedaear.com/internal/common/telemetry"
-	"backend.brokedaear.com/internal/common/tests/assert"
+	"backend.brokedaear.com/pkg/assert"
 )
 
 func newTelConfig() *telemetry.Config {

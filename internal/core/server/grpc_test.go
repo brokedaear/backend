@@ -15,9 +15,9 @@ import (
 	"google.golang.org/grpc/health/grpc_health_v1"
 
 	"backend.brokedaear.com"
-	"backend.brokedaear.com/internal/common/tests/assert"
-	"backend.brokedaear.com/internal/common/tests/test"
 	"backend.brokedaear.com/internal/core/server"
+	"backend.brokedaear.com/pkg/assert"
+	"backend.brokedaear.com/pkg/test"
 )
 
 const testPort = 8989
@@ -66,19 +66,21 @@ func TestNewGRPCServer(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.Name, func(t *testing.T) {
-			ctx := t.Context()
-			logger := test.NewMockLogger()
+		t.Run(
+			tt.Name, func(t *testing.T) {
+				ctx := t.Context()
+				logger := test.NewMockLogger()
 
-			srv, err := server.NewGRPCServer(ctx, logger, tt.config)
-			assert.ErrorOrNoError(t, err, tt.WantErr)
+				srv, err := server.NewGRPCServer(ctx, logger, tt.config)
+				assert.ErrorOrNoError(t, err, tt.WantErr)
 
-			if !tt.WantErr {
-				assert.NotEqual(t, srv, nil)
-				closeErr := srv.Close()
-				assert.NoError(t, closeErr)
-			}
-		})
+				if !tt.WantErr {
+					assert.NotEqual(t, srv, nil)
+					closeErr := srv.Close()
+					assert.NoError(t, closeErr)
+				}
+			},
+		)
 	}
 }
 

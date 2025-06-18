@@ -7,9 +7,9 @@ package validator_test
 import (
 	"testing"
 
-	"backend.brokedaear.com/internal/common/tests/assert"
-	"backend.brokedaear.com/internal/common/tests/test"
 	"backend.brokedaear.com/internal/common/validator"
+	"backend.brokedaear.com/pkg/assert"
+	"backend.brokedaear.com/pkg/test"
 )
 
 func TestCheck(t *testing.T) {

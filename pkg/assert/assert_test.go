@@ -7,7 +7,7 @@ package assert_test
 import (
 	"testing"
 
-	"backend.brokedaear.com/internal/common/tests/assert"
+	"backend.brokedaear.com/pkg/assert"
 )
 
 func TestAssertFunctions(t *testing.T) {

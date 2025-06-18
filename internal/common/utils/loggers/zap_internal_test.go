@@ -10,8 +10,9 @@ import (
 	"testing"
 
 	"backend.brokedaear.com"
-	"backend.brokedaear.com/internal/common/tests/assert"
-	"backend.brokedaear.com/internal/common/tests/test"
+	"backend.brokedaear.com/pkg/assert"
+	"backend.brokedaear.com/pkg/test"
+
 	"go.opentelemetry.io/otel/sdk/log"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"

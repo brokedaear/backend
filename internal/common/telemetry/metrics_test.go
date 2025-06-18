@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"backend.brokedaear.com/internal/common/telemetry"
-	"backend.brokedaear.com/internal/common/tests/assert"
+	"backend.brokedaear.com/pkg/assert"
 )
 
 func TestMetric(t *testing.T) {

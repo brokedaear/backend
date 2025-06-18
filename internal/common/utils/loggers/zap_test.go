@@ -12,14 +12,15 @@ import (
 	"testing"
 
 	"backend.brokedaear.com"
+	"backend.brokedaear.com/pkg/assert"
+	"backend.brokedaear.com/pkg/test"
+
 	"go.opentelemetry.io/otel/exporters/stdout/stdoutlog"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"go.uber.org/zap/zaptest"
 
 	"backend.brokedaear.com/internal/common/telemetry"
-	"backend.brokedaear.com/internal/common/tests/assert"
-	"backend.brokedaear.com/internal/common/tests/test"
 	"backend.brokedaear.com/internal/common/utils/loggers"
 )
 

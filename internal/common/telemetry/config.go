@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/pkg/errors"
+	"backend.brokedaear.com/pkg/errors"
 )
 
 // Config is the configuration for telemetry.

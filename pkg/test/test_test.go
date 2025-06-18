@@ -7,8 +7,8 @@ package test_test
 import (
 	"testing"
 
-	"backend.brokedaear.com/internal/common/tests/assert"
-	"backend.brokedaear.com/internal/common/tests/test"
+	"backend.brokedaear.com/pkg/assert"
+	"backend.brokedaear.com/pkg/test"
 )
 
 func TestNewCaseBase(t *testing.T) {
@@ -64,8 +64,9 @@ func TestNewCaseBase(t *testing.T) {
 }
 
 func TestCaseBaseFields(t *testing.T) {
-	t.Run("basic fields", func(t *testing.T) {
-		name := "test case name"
+	t.Run(
+		"basic fields", func(t *testing.T) {
+			name := "test case name"
 			want := "expected result"
 
 			caseBase := test.NewCaseBase(name, want, true)

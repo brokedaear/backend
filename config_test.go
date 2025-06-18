@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"backend.brokedaear.com"
-	"backend.brokedaear.com/internal/common/tests/assert"
-	"backend.brokedaear.com/internal/common/tests/test"
+	"backend.brokedaear.com/pkg/assert"
+	"backend.brokedaear.com/pkg/test"
 )
 
 type EnvironmentValidateTestCase struct {
@@ -195,11 +195,13 @@ func TestEnvironment_Consistency(t *testing.T) {
 	envs := []backend.Environment{backend.EnvDevelopment, backend.EnvStaging, backend.EnvProduction}
 
 	for _, env := range envs {
-		t.Run("consistency_"+env.String(), func(t *testing.T) {
-			reconstructed, err := backend.EnvFromString(env.String())
-			assert.NoError(t, err)
-			assert.Equal(t, reconstructed, env)
-		})
+		t.Run(
+			"consistency_"+env.String(), func(t *testing.T) {
+				reconstructed, err := backend.EnvFromString(env.String())
+				assert.NoError(t, err)
+				assert.Equal(t, reconstructed, env)
+			},
+		)
 	}
 }
 

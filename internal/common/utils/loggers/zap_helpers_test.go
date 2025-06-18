@@ -9,8 +9,9 @@ import (
 	"encoding/json"
 	"testing"
 
-	"backend.brokedaear.com/internal/common/tests/assert"
 	"go.uber.org/zap/zaptest"
+
+	"backend.brokedaear.com/pkg/assert"
 )
 
 func newBufAndWriter() (*zaptest.Buffer, *bufio.Writer) {

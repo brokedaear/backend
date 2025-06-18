@@ -14,14 +14,14 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 
-	"backend.brokedaear.com/internal/common/tests/assert"
-	"backend.brokedaear.com/internal/common/tests/test"
 	"backend.brokedaear.com/internal/core/server"
+	"backend.brokedaear.com/pkg/assert"
+	"backend.brokedaear.com/pkg/test"
 )
 
 func TestNewHealthServer(t *testing.T) {
 	logger := test.NewMockLogger()
-	
+
 	healthServer := server.NewHealthServer(logger)
 	assert.NotEqual(t, healthServer, nil)
 }
@@ -62,14 +62,16 @@ func TestHealthServer_SetServingStatus(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.Name, func(t *testing.T) {
-			_ = t
-			logger := test.NewMockLogger()
-			healthServer := server.NewHealthServer(logger)
-			
-			// This should not panic.
-			healthServer.SetServingStatus(tt.service, tt.status)
-		})
+		t.Run(
+			tt.Name, func(t *testing.T) {
+				_ = t
+				logger := test.NewMockLogger()
+				healthServer := server.NewHealthServer(logger)
+
+				// This should not panic.
+				healthServer.SetServingStatus(tt.service, tt.status)
+			},
+		)
 	}
 }
 
@@ -117,30 +119,36 @@ func TestHealthServer_Check(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.Name, func(t *testing.T) {
-			ctx := t.Context()
-			logger := test.NewMockLogger()
-			healthServer := server.NewHealthServer(logger)
-			
-			// Setup the service status.
-			healthServer.SetServingStatus(tt.setupService, tt.setupStatus)
-			
-			req := &grpc_health_v1.HealthCheckRequest{
-				Service: tt.service,
-			}
-			
-			resp, err := healthServer.Check(ctx, req)
-			assert.ErrorOrNoError(t, err, tt.WantErr)
-			
-			if tt.WantErr {
-				st, ok := status.FromError(err)
-				assert.Equal(t, ok, true)
-				assert.Equal(t, st.Code(), tt.expectedCode)
-			} else {
-				assert.NotEqual(t, resp, nil)
-				assert.Equal(t, resp.GetStatus(), tt.Want.(grpc_health_v1.HealthCheckResponse_ServingStatus))
-			}
-		})
+		t.Run(
+			tt.Name, func(t *testing.T) {
+				ctx := t.Context()
+				logger := test.NewMockLogger()
+				healthServer := server.NewHealthServer(logger)
+
+				// Setup the service status.
+				healthServer.SetServingStatus(tt.setupService, tt.setupStatus)
+
+				req := &grpc_health_v1.HealthCheckRequest{
+					Service: tt.service,
+				}
+
+				resp, err := healthServer.Check(ctx, req)
+				assert.ErrorOrNoError(t, err, tt.WantErr)
+
+				if tt.WantErr {
+					st, ok := status.FromError(err)
+					assert.Equal(t, ok, true)
+					assert.Equal(t, st.Code(), tt.expectedCode)
+				} else {
+					assert.NotEqual(t, resp, nil)
+					assert.Equal(
+						t,
+						resp.GetStatus(),
+						tt.Want.(grpc_health_v1.HealthCheckResponse_ServingStatus),
+					)
+				}
+			},
+		)
 	}
 }
 
@@ -148,30 +156,30 @@ func TestHealthServer_Watch(t *testing.T) {
 	ctx := t.Context()
 	logger := test.NewMockLogger()
 	healthServer := server.NewHealthServer(logger)
-	
+
 	service := "testservice"
 	initialStatus := grpc_health_v1.HealthCheckResponse_SERVING
-	
+
 	// Setup the service.
 	healthServer.SetServingStatus(service, initialStatus)
-	
+
 	// Create a mock stream.
 	mockStream := &mockHealthWatchServer{
 		ctx:      ctx,
 		cancel:   nil,
 		received: make(chan *grpc_health_v1.HealthCheckResponse, 10),
 	}
-	
+
 	req := &grpc_health_v1.HealthCheckRequest{
 		Service: service,
 	}
-	
+
 	// Start watching in a goroutine.
 	watchDone := make(chan error, 1)
 	go func() {
 		watchDone <- healthServer.Watch(req, mockStream)
 	}()
-	
+
 	// Should receive initial status immediately.
 	select {
 	case resp := <-mockStream.received:
@@ -179,21 +187,21 @@ func TestHealthServer_Watch(t *testing.T) {
 	case <-time.After(100 * time.Millisecond):
 		t.Fatal("did not receive initial health status")
 	}
-	
+
 	// Change status and should receive update.
 	newStatus := grpc_health_v1.HealthCheckResponse_NOT_SERVING
 	healthServer.SetServingStatus(service, newStatus)
-	
+
 	select {
 	case resp := <-mockStream.received:
 		assert.Equal(t, resp.GetStatus(), newStatus)
 	case <-time.After(100 * time.Millisecond):
 		t.Fatal("did not receive health status update")
 	}
-	
+
 	// Cancel context to end watch.
 	mockStream.cancel()
-	
+
 	select {
 	case err := <-watchDone:
 		assert.NoError(t, err)
@@ -206,20 +214,20 @@ func TestHealthServer_WatchUnknownService(t *testing.T) {
 	ctx := t.Context()
 	logger := test.NewMockLogger()
 	healthServer := server.NewHealthServer(logger)
-	
+
 	mockStream := &mockHealthWatchServer{
 		ctx:      ctx,
 		cancel:   nil,
 		received: make(chan *grpc_health_v1.HealthCheckResponse, 10),
 	}
-	
+
 	req := &grpc_health_v1.HealthCheckRequest{
 		Service: "unknown",
 	}
-	
+
 	err := healthServer.Watch(req, mockStream)
 	assert.ErrorOrNoError(t, err, true)
-	
+
 	st, ok := status.FromError(err)
 	assert.Equal(t, ok, true)
 	assert.Equal(t, st.Code(), codes.NotFound)
@@ -228,22 +236,22 @@ func TestHealthServer_WatchUnknownService(t *testing.T) {
 func TestHealthServer_Shutdown(t *testing.T) {
 	logger := test.NewMockLogger()
 	healthServer := server.NewHealthServer(logger)
-	
+
 	// Setup some services.
 	healthServer.SetServingStatus("", grpc_health_v1.HealthCheckResponse_SERVING)
 	healthServer.SetServingStatus("service1", grpc_health_v1.HealthCheckResponse_SERVING)
 	healthServer.SetServingStatus("service2", grpc_health_v1.HealthCheckResponse_NOT_SERVING)
-	
+
 	// Shutdown should not panic.
 	healthServer.Shutdown()
-	
+
 	// After shutdown, all services should report NOT_SERVING.
 	ctx := t.Context()
-	
+
 	resp, err := healthServer.Check(ctx, &grpc_health_v1.HealthCheckRequest{Service: ""})
 	assert.NoError(t, err)
 	assert.Equal(t, resp.GetStatus(), grpc_health_v1.HealthCheckResponse_NOT_SERVING)
-	
+
 	resp, err = healthServer.Check(ctx, &grpc_health_v1.HealthCheckRequest{Service: "service1"})
 	assert.NoError(t, err)
 	assert.Equal(t, resp.GetStatus(), grpc_health_v1.HealthCheckResponse_NOT_SERVING)

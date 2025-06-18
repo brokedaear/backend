@@ -14,7 +14,7 @@ import (
 	"go.opentelemetry.io/otel/exporters/stdout/stdouttrace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 
-	"backend.brokedaear.com/internal/common/tests/assert"
+	"backend.brokedaear.com/pkg/assert"
 )
 
 func TestNewLoggerProvider(t *testing.T) {

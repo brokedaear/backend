@@ -9,8 +9,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"backend.brokedaear.com/internal/common/tests/assert"
-	"backend.brokedaear.com/internal/common/tests/test"
+	"backend.brokedaear.com/pkg/assert"
+	"backend.brokedaear.com/pkg/test"
 )
 
 type LoggerExporterTestCase struct {
