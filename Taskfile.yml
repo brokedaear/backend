@@ -25,6 +25,10 @@ tasks:
     cmds:
       - echo "Testing go files..."
       - task test-internal
+  benchmark: # runs Go benchmarks
+    cmds:
+      - echo "Running Go benchmarks..."
+      - ./scripts/benchmark.sh
   lint-go: # lints all Go files
     cmds:
       - golangci-lint run

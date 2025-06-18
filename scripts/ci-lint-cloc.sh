@@ -4,10 +4,12 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 
-set -e
+set -euo pipefail
 
 printf "\n\n"
-figlet -f chunky BrokeDaCI
+figlet -f chunky Broke
+figlet -f chunky da
+figlet -f chunky LINT
 
 echo "Linting Go files..."
 golangci-lint run
@@ -19,11 +21,6 @@ printf "\n\n"
 
 echo "Linting Licenses..."
 reuse lint
-
-printf "\n\n"
-figlet -f chunky Tests
-echo "Running Go tests..."
-gotestsum --format testdox ./...
 
 printf "\n\n"
 figlet -f chunky CLOC

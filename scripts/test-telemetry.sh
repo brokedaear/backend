@@ -190,4 +190,3 @@ echo "The application will continue running. Press Ctrl+C to stop."
 
 # Keep the script running
 wait $APP_PID
-

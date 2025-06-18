@@ -42,10 +42,23 @@
         };
 
         treefmtEval = treefmt-nix.lib.evalModule pkgs ./treefmt.nix;
-        ci-script-name = "run-ci";
+
+        ci-script-name = "ci-lint-cloc";
         ci-script = da-flake.lib.${system}.mkScript {
           name = ci-script-name;
-          scriptPath = ./scripts/ci.sh;
+          scriptPath = ./scripts/ci-lint-cloc.sh;
+        };
+
+        test-script-name = "ci-test";
+        test-script = da-flake.lib.${system}.mkScript {
+          name = test-script-name;
+          scriptPath = ./scripts/ci-test.sh;
+        };
+
+        benchmark-script-name = "ci-benchmark";
+        benchmark-script = da-flake.lib.${system}.mkScript {
+          name = benchmark-script-name;
+          scriptPath = ./scripts/ci-benchmark.sh;
         };
 
         ciPackages =
@@ -55,8 +68,9 @@
             gofumpt # Go formatter
             golangci-lint # Local/CI linter
             gotestsum # Pretty tester
+            goperf # Go performance suite
             buf # protobuf linter/formatter
-            protobuf
+            protobuf # protobuf utils
           ]
           ++ da-flake.lib.${system}.ciPackages;
 
@@ -122,7 +136,11 @@
         devShells = {
           default = pkgs.mkShell {
             buildInputs =
-              [ ci-script ]
+              [
+                ci-script
+                test-script
+                benchmark-script
+              ]
               ++ ciPackages
               ++ devPackages
               ++ self.checks.${system}.pre-commit-check.enabledPackages;
@@ -137,7 +155,11 @@
           };
 
           ci = pkgs.mkShell {
-            buildInputs = [ ci-script ] ++ ciPackages;
+            buildInputs = [
+              ci-script
+              benchmark-script
+              test-script
+            ] ++ ciPackages;
             CI = true;
             shellHook = ''
               echo "Entering CI shell. Only essential CI tools available."
