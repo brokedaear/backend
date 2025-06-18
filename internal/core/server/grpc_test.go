@@ -258,3 +258,77 @@ func TestGRPCPanicRecovery(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, resp.GetStatus(), grpc_health_v1.HealthCheckResponse_SERVING)
 }
+
+func TestGRPCServerSetHealthStatus(t *testing.T) {
+	ctx := t.Context()
+	logger := test.NewMockLogger()
+
+	config := &server.Config{
+		Addr:      server.Address("localhost"),
+		Port:      server.Port(testPort),
+		Env:       backend.EnvDevelopment,
+		Version:   server.Version("1.0.0"),
+		Telemetry: false,
+	}
+
+	srv, err := server.NewGRPCServer(ctx, logger, config)
+	assert.NoError(t, err)
+	assert.NotEqual(t, srv, nil)
+
+	defer func() {
+		closeErr := srv.Close()
+		assert.NoError(t, closeErr)
+	}()
+
+	// Test setting health status for a specific service.
+	srv.SetHealthStatus("testservice", grpc_health_v1.HealthCheckResponse_NOT_SERVING)
+
+	serverCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	serverDone := make(chan error, 1)
+	go func() {
+		serverDone <- srv.ListenAndServe(serverCtx)
+	}()
+
+	time.Sleep(100 * time.Millisecond)
+
+	lis := getListener(t, srv)
+	addr := lis.Addr().String()
+
+	conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	assert.NoError(t, err)
+	defer func() {
+		connCloseErr := conn.Close()
+		assert.NoError(t, connCloseErr)
+	}()
+
+	healthClient := grpc_health_v1.NewHealthClient(conn)
+
+	// Check overall server health (should be SERVING by default).
+	resp, err := healthClient.Check(ctx, &grpc_health_v1.HealthCheckRequest{Service: ""})
+	assert.NoError(t, err)
+	assert.Equal(t, resp.GetStatus(), grpc_health_v1.HealthCheckResponse_SERVING)
+
+	// Check specific service health (should be NOT_SERVING as we set it).
+	resp, err = healthClient.Check(ctx, &grpc_health_v1.HealthCheckRequest{Service: "testservice"})
+	assert.NoError(t, err)
+	assert.Equal(t, resp.GetStatus(), grpc_health_v1.HealthCheckResponse_NOT_SERVING)
+
+	// Update service health to SERVING.
+	srv.SetHealthStatus("testservice", grpc_health_v1.HealthCheckResponse_SERVING)
+
+	// Check again - should now be SERVING.
+	resp, err = healthClient.Check(ctx, &grpc_health_v1.HealthCheckRequest{Service: "testservice"})
+	assert.NoError(t, err)
+	assert.Equal(t, resp.GetStatus(), grpc_health_v1.HealthCheckResponse_SERVING)
+
+	cancel()
+
+	select {
+	case serverErr := <-serverDone:
+		assert.NoError(t, serverErr)
+	case <-time.After(5 * time.Second):
+		t.Fatal("server did not shutdown within timeout")
+	}
+}

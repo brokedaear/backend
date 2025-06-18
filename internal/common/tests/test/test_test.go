@@ -64,10 +64,8 @@ func TestNewCaseBase(t *testing.T) {
 }
 
 func TestCaseBaseFields(t *testing.T) {
-	t.Run(
-		"basic fields", func(t *testing.T) {
-
-			name := "test case name"
+	t.Run("basic fields", func(t *testing.T) {
+		name := "test case name"
 			want := "expected result"
 
 			caseBase := test.NewCaseBase(name, want, true)

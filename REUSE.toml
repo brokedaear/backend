@@ -9,3 +9,8 @@ SPDX-License-Identifier = "Unlicense"
 path = ["app/.env.example"]
 SPDX-FileCopyrightText = "${REUSE_COPYRIGHT}"
 SPDX-License-Identifier = "Apache-2.0"
+
+[[annotations]]
+path = ["*.proto"]
+SPDX-FileCopyrightText = "${REUSE_COPYRIGHT}"
+SPDX-License-Identifier = "Apache-2.0"

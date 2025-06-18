@@ -15,7 +15,6 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/reflection"
 	"google.golang.org/grpc/status"
@@ -31,12 +30,14 @@ import (
 type GRPCServer interface {
 	ListenAndServe(context.Context) error
 	RegisterService(desc *grpc.ServiceDesc, impl any)
+	SetHealthStatus(service string, status grpc_health_v1.HealthCheckResponse_ServingStatus)
 	io.Closer
 }
 
 type grpcServer struct {
 	*Base
-	srv *grpc.Server
+	srv          *grpc.Server
+	healthServer *HealthServer
 }
 
 // NewGRPCServer creates a new gRPC server using a logger and a config.
@@ -76,14 +77,18 @@ func NewGRPCServer(ctx context.Context, logger Logger, config *Config) (GRPCServ
 
 	srv := grpc.NewServer(opts...)
 
-	grpcHealthServer := health.NewServer()
-	grpc_health_v1.RegisterHealthServer(srv, grpcHealthServer)
+	healthServer := NewHealthServer(b.logger)
+	grpc_health_v1.RegisterHealthServer(srv, healthServer)
+
+	// Set initial overall server health to serving.
+	healthServer.SetServingStatus("", grpc_health_v1.HealthCheckResponse_SERVING)
 
 	reflection.Register(srv)
 
 	return &grpcServer{
-		Base: b,
-		srv:  srv,
+		Base:         b,
+		srv:          srv,
+		healthServer: healthServer,
 	}, nil
 }
 
@@ -116,6 +121,12 @@ func (s grpcServer) RegisterService(desc *grpc.ServiceDesc, impl any) {
 	s.srv.RegisterService(desc, impl)
 }
 
+// SetHealthStatus sets the health status for a specific service.
+// Use empty string for the overall server health status.
+func (s grpcServer) SetHealthStatus(service string, status grpc_health_v1.HealthCheckResponse_ServingStatus) {
+	s.healthServer.SetServingStatus(service, status)
+}
+
 // GetListener returns the underlying listener for testing purposes.
 func (s grpcServer) GetListener() net.Listener {
 	return s.listener
@@ -123,6 +134,9 @@ func (s grpcServer) GetListener() net.Listener {
 
 func (s grpcServer) Close() error {
 	const shutdownTimeout = 20 * time.Second
+
+	// Shutdown health server first to notify watchers.
+	s.healthServer.Shutdown()
 
 	shutdownCtx, shutdownCancel := context.WithDeadline(
 		context.Background(),

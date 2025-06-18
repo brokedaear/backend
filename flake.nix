@@ -55,6 +55,7 @@
             gofumpt # Go formatter
             golangci-lint # Local/CI linter
             gotestsum # Pretty tester
+            buf # protobuf linter/formatter
           ]
           ++ da-flake.lib.${system}.ciPackages;
 
